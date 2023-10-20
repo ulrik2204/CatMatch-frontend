@@ -1,4 +1,4 @@
-import { Pokemon } from "./util/types";
+import { type Pokemon } from "./types/pokemon";
 
 export const fetchPokemon = async (pokemonName: string) =>
   fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName}`).then<Pokemon>((res) => {

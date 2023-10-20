@@ -1,40 +1,40 @@
-interface NameUrlPair {
+export type NameUrlPair = {
   name: string;
   url: string;
-}
+};
 
-interface Ability {
+export type Ability = {
   ability: NameUrlPair;
   is_hidden: boolean;
   slot: number;
-}
+};
 
-interface Item {
+export type Item = {
   item: NameUrlPair;
-}
+};
 
-interface Move {
+export type Move = {
   move: NameUrlPair;
-}
+};
 
-interface SimpleSprite {
+export type SimpleSprite = {
   front_default: string;
-}
+};
 
-interface Sprites extends SimpleSprite {
+export type Sprites = SimpleSprite & {
   other: OtherSprites;
-}
+};
 
-interface OtherSprites {
+export type OtherSprites = {
   dream_world: SimpleSprite;
   "official-artwork": SimpleSprite;
-}
+};
 
-interface TypeOfPokemon {
+export type TypeOfPokemon = {
   type: NameUrlPair;
-}
+};
 
-export interface Pokemon {
+export type Pokemon = {
   abilities: Ability[];
   base_experience: number;
   forms: NameUrlPair[];
@@ -47,4 +47,4 @@ export interface Pokemon {
   sprites: Sprites;
   types: TypeOfPokemon[];
   weight: number;
-}
+};
