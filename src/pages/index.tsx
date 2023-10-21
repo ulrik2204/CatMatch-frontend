@@ -1,10 +1,9 @@
-import { useMemo, type ReactElement } from "react";
+import { useMemo, type ReactElement, useState } from "react";
 import PageContainer from "../components/PageContainer";
 import { useQuery } from "@tanstack/react-query";
-import { type Pokemon } from "../types/pokemon";
 import PokemonCard from "../components/PokemonCard";
-import { fromApi } from "../lib/fromApi";
-import { PokemonMove } from "../types/move";
+import { getMoveFromApi, getPokemonFromApi } from "../lib/fromApi";
+import Button from "../components/Button";
 
 function getRandomPokemonId(prevId = 0) {
   return 512;
@@ -22,57 +21,51 @@ function generateTwoUniqueRandomNumbers(max: number): [number, number] {
   return [rand1, rand2];
 }
 
-function fetchPokemon() {
-  // 132 is ditto
-  const rand = getRandomPokemonId();
-  return fromApi<Pokemon>("https://pokeapi.co/api/v2/pokemon/" + rand.toString());
-}
-function fetchAllPokemon() {
-  return fromApi("https://pokeapi.co/api/v2/pokemon", { query: { limit: 1000 } });
-}
-
-function getMove(moveUrl: string) {
-  return fromApi<PokemonMove>(moveUrl);
-}
-
 function usePokemonAndMoves(id: number) {
-  const { data: pokemon } = useQuery(["single-pokemon"], fetchPokemon);
+  const { data: pokemon } = useQuery(["single-pokemon", id], () => getPokemonFromApi(id));
 
   const [selectedMove1, selectedMove2] = useMemo(() => {
     if (!pokemon) return [null, null];
-    const len = pokemon.moves.length;
-    if (len === 1) return pokemon.moves;
-    else if (len === 2) return pokemon.moves;
-    else {
-      const [rand1, rand2] = generateTwoUniqueRandomNumbers(len);
-      return [pokemon.moves[rand1], pokemon.moves[rand2]];
-    }
+
+    const moveCount = pokemon.moves.length;
+    if (moveCount === 1) return pokemon.moves;
+    else if (moveCount === 2) return pokemon.moves;
+
+    const [rand1, rand2] = generateTwoUniqueRandomNumbers(moveCount);
+    return [pokemon.moves[rand1], pokemon.moves[rand2]];
   }, [pokemon?.moves]);
 
-  const { data: move1 } = useQuery(["move", selectedMove1?.move.url], () =>
-    selectedMove1 != null ? getMove(selectedMove1.move.url) : undefined,
+  const { data: move1 } = useQuery(["move1", selectedMove1?.move.name], () =>
+    selectedMove1 != null ? getMoveFromApi(selectedMove1.move.name) : undefined,
   );
-  const { data: move2 } = useQuery(["move", selectedMove2?.move.url], () =>
-    selectedMove2 != null ? getMove(selectedMove2.move.url) : undefined,
+  const { data: move2 } = useQuery(["move2", selectedMove2?.move.name], () =>
+    selectedMove2 != null ? getMoveFromApi(selectedMove2.move.name) : undefined,
   );
-  if (!pokemon) return null;
-  if (!move1) return null;
+  if (!pokemon || !move1) return null;
   if (!move2 && pokemon.moves.length > 1) return null;
 
   return { pokemon, move1, move2 };
 }
 
 export default function IndexPage(): ReactElement {
-  const pokemonAndMoves = usePokemonAndMoves(512);
+  const [pokemonId, setPokemonId] = useState(512);
+  const pokemonAndMoves = usePokemonAndMoves(pokemonId);
   return (
     <PageContainer>
-      {pokemonAndMoves && (
-        <PokemonCard
-          pokemon={pokemonAndMoves.pokemon}
-          move1={pokemonAndMoves.move1}
-          move2={pokemonAndMoves.move2}
-        />
-      )}
+      <div>
+        {pokemonAndMoves && (
+          <PokemonCard
+            pokemon={pokemonAndMoves.pokemon}
+            move1={pokemonAndMoves.move1}
+            move2={pokemonAndMoves.move2}
+          />
+        )}
+        <div className="flex flex-row justify-between">
+          <Button onClick={() => setPokemonId((prev) => prev - 1)}>Previous</Button>
+          <div>{pokemonAndMoves?.pokemon.id}</div>
+          <Button onClick={() => setPokemonId((prev) => prev + 1)}>Next</Button>
+        </div>
+      </div>
     </PageContainer>
   );
 }
