@@ -6,7 +6,7 @@ type PageContainerProps = {
 
 export default function PageContainer(props: PageContainerProps): ReactElement {
   return (
-    <div className="align-center align-center min-w-screen bg-red-500 flex min-h-screen flex-col items-center">
+    <div className="align-center min-w-screen flex min-h-screen flex-col items-center">
       <main>{props.children}</main>
     </div>
   );

@@ -6,6 +6,7 @@ import PokemonCard from "../components/PokemonCard";
 import { fromApi } from "../lib/fromApi";
 
 function getRandomPokemonId(prevId = 0) {
+  return 512;
   const maxIdNumber = 1017;
   const rand = Math.floor(Math.random() * maxIdNumber);
   if (rand === prevId) return getRandomPokemonId(prevId);
@@ -14,7 +15,8 @@ function getRandomPokemonId(prevId = 0) {
 
 function fetchPokemon() {
   // 132 is ditto
-  return fromApi<Pokemon>("https://pokeapi.co/api/v2/pokemon/1");
+  const rand = getRandomPokemonId();
+  return fromApi<Pokemon>("https://pokeapi.co/api/v2/pokemon/" + rand.toString());
 }
 function fetchAllPokemon() {
   return fromApi("https://pokeapi.co/api/v2/pokemon", { query: { limit: 1000 } });
