@@ -15,8 +15,28 @@ function generateTwoUniqueRandomNumbers(max: number): [number, number] {
   return [rand1, rand2];
 }
 
+const pokemonTypeColors = {
+  normal: "bg-[#A8A878]",
+  fighting: "bg-[#C03028]",
+  flying: "bg-[#A890F0]",
+  poison: "bg-[#A040A0]",
+  ground: "bg-[#E0C068]",
+  rock: "bg-[#B8A038]",
+  bug: "bg-[#A8B820]",
+  ghost: "bg-[#705898]",
+  steel: "bg-[#B8B8D0]",
+  fire: "bg-[#F08030]",
+  water: "bg-[#6890F0]",
+  grass: "bg-[#78C850]",
+  electric: "bg-[#F8D030]",
+  psychic: "bg-[#F85888]",
+  ice: "bg-[#98D8D8]",
+  dragon: "bg-[#7038F8]",
+  dark: "bg-[#705848]",
+  fairy: "bg-[#EE99AC]",
+};
+
 export default function PokemonCard({ pokemon }: PokemonCardProps): ReactElement {
-  console.log("types", pokemon.types);
   const selectedMoves = useMemo(() => {
     const len = pokemon.moves.length;
     if (len === 1) return pokemon.moves;
@@ -27,9 +47,17 @@ export default function PokemonCard({ pokemon }: PokemonCardProps): ReactElement
     }
   }, [pokemon.moves]);
 
+  const pokemonType = pokemon.types[0].type.name;
+
   return (
     <div className="flex h-80 w-56 flex-col items-center justify-center rounded border bg-pokeborder p-2">
-      <div className="flex h-full w-full flex-col items-center rounded bg-pokebackground">
+      <div
+        className={`flex h-full w-full flex-col items-center rounded ${
+          pokemonTypeColors.hasOwnProperty(pokemonType)
+            ? pokemonTypeColors[pokemonType as keyof typeof pokemonTypeColors]
+            : "bg-[#68A090]"
+        }`}
+      >
         <div className="flex w-11/12 flex-col">
           <h2 className="font-bold capitalize">{pokemon.name}</h2>
           <div className="flex h-32 w-full flex-col items-center justify-center rounded border-4 border-gray-400 bg-white">
