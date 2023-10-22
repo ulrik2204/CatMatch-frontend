@@ -49,8 +49,7 @@ export default function PokemonCard(props: PokemonCardProps): ReactElement {
               alt="Picture"
               className="h-28 object-contain"
             />
-            <div className="flex h-2 w-full items-center justify-center bg-gray-300 text-[0.4rem]">
-              {/* Number, height, width */}
+            <div className="flex h-3 w-full items-center justify-center bg-gray-300 text-[0.4rem]">
               No: {props.pokemon.id} | H: {props.pokemon.height} | W: {props.pokemon.weight}
             </div>
           </div>
