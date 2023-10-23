@@ -3,6 +3,8 @@ import "./app.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import IndexPage from "./pages";
 import PageContainer from "./components/PageContainer";
+import LikesPage from "./pages/likes";
+import StatsPage from "./pages/stats";
 
 const queryClient = new QueryClient();
 
@@ -10,6 +12,14 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <IndexPage />,
+  },
+  {
+    path: "/likes",
+    element: <LikesPage />,
+  },
+  {
+    path: "/stats",
+    element: <StatsPage />,
   },
 ]);
 
