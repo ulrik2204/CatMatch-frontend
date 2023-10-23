@@ -1,8 +1,5 @@
-import { useMemo, type ReactElement, useState, useCallback } from "react";
-import PageContainer from "../components/PageContainer";
-import { useQuery } from "@tanstack/react-query";
+import { type ReactElement, useState, useCallback } from "react";
 import PokemonCard from "../components/PokemonCard";
-import { getMoveFromApi, getPokemonFromApi } from "../lib/fromApi";
 import Button from "../components/Button";
 import { useLikedPokemon, usePokemonAndMoves } from "../helpers/hooks";
 
@@ -11,14 +8,6 @@ function getRandomPokemonId(prevId = 0) {
   const rand = Math.floor(Math.random() * maxIdNumber);
   if (rand === prevId) return getRandomPokemonId(prevId);
   return rand;
-}
-
-function generateTwoUniqueRandomNumbers(max: number): [number, number] {
-  return [2, 7];
-  const rand1 = Math.floor(Math.random() * max);
-  const rand2 = Math.floor(Math.random() * max);
-  if (rand1 === rand2) return generateTwoUniqueRandomNumbers(max);
-  return [rand1, rand2];
 }
 
 export default function IndexPage(): ReactElement {
