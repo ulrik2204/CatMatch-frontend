@@ -20,8 +20,6 @@
   },
   "scripts": {
     "build": "tsc && vite build",
-    "serve": "vite preview",
-    "start": "npx http-server ./dist -a 0.0.0.0 -p $PORT",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "preview": "vite preview",
     "prettier": "prettier --write ."
