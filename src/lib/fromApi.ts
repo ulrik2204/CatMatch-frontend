@@ -38,3 +38,22 @@ export function getPokemonFromApi(idOrName: string | number) {
 export function getMoveFromApi(idOrName: string | number) {
   return fromApi<PokemonMove>("https://pokeapi.co/api/v2/move/" + idOrName.toString());
 }
+
+export async function getManyPokemonFromApi(
+  nameOrIdList: (string | number)[],
+): Promise<[Pokemon[], string[]]> {
+  const promises = [];
+  for (const nameOrId of nameOrIdList) {
+    promises.push(getPokemonFromApi(nameOrId));
+  }
+  const settled = await Promise.allSettled(promises);
+  const [successfulPokemon, rejectedPokemonReasons]: [Pokemon[], string[]] = settled.reduce(
+    (result: [Pokemon[], string[]], pokemon) => {
+      const [successful, rejected] = result;
+      if (pokemon.status === "rejected") return [successful, [...rejected, pokemon.reason]];
+      return [[...successful, pokemon.value], rejected] as [Pokemon[], string[]];
+    },
+    [[], []] as [Pokemon[], string[]],
+  );
+  return [successfulPokemon, rejectedPokemonReasons];
+}

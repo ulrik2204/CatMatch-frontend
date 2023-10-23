@@ -9,6 +9,7 @@ export default function LikesPage() {
       <div className="flex w-full flex-col items-center pt-6">
         {likedPokemonNames.map((pokemonName) => (
           <div
+            key={pokemonName}
             className="flex w-5/6 items-center justify-between pt-4 md:w-3/5 lg:w-2/5
           "
           >
