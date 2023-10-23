@@ -1,29 +1,33 @@
 import { type ReactElement, useState, useCallback } from "react";
 import PokemonCard from "../components/PokemonCard";
 import Button from "../components/Button";
-import { useLikedPokemon, usePokemonAndMoves } from "../helpers/hooks";
+import { useLikedPokemon, usePokemonAndMoves, useSeenPokemon } from "../helpers/hooks";
 
-function getRandomPokemonId(prevId = 0) {
+function getRandomPokemonId(prevIds: number[]) {
   const maxIdNumber = 1017;
+  if (prevIds.length === maxIdNumber) return -1;
   const rand = Math.floor(Math.random() * maxIdNumber);
-  if (rand === prevId) return getRandomPokemonId(prevId);
+  if (rand in prevIds) return getRandomPokemonId([...prevIds, rand]);
   return rand;
 }
 
 export default function IndexPage(): ReactElement {
-  const [pokemonId, setPokemonId] = useState(512);
+  const [pokemonId, setPokemonId] = useState(getRandomPokemonId([-1]));
   const pokemonAndMoves = usePokemonAndMoves(pokemonId);
   const { addPokemon } = useLikedPokemon();
+  const { seenPokemonIds, addSeenPokemonId } = useSeenPokemon();
 
   const handleLike = useCallback(() => {
     if (!pokemonAndMoves) return;
     addPokemon(pokemonAndMoves.pokemon.name);
-    setPokemonId(getRandomPokemonId(pokemonId));
+    addSeenPokemonId(pokemonId);
+    setPokemonId(getRandomPokemonId([...seenPokemonIds, pokemonId]));
   }, [addPokemon, pokemonId, pokemonAndMoves]);
 
   const handleDislike = useCallback(() => {
     if (!pokemonAndMoves) return;
-    setPokemonId(getRandomPokemonId(pokemonId));
+    addSeenPokemonId(pokemonId);
+    setPokemonId(getRandomPokemonId([...seenPokemonIds, pokemonId]));
   }, [addPokemon, pokemonId, pokemonAndMoves]);
 
   return (

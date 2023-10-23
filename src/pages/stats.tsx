@@ -1,10 +1,8 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Button from "../components/Button";
 import { useLikedPokemon, useLocalStorage } from "../helpers/hooks";
-import crypto from "crypto";
-import { Pokemon } from "../types/pokemon";
 import { getManyPokemonFromApi } from "../lib/fromApi";
-import { log } from "console";
+import { Pokemon } from "../types/pokemon";
 
 type Statistics = {
   likedPokemonCount: number;
@@ -26,10 +24,6 @@ function useStatistics() {
   const [loading, setLoading] = useState(false);
   const [errorReasons, setErrorReasons] = useState<string[] | undefined>(undefined);
 
-  useEffect(() => {
-    console.log("Loading", loading);
-  }, [loading]);
-
   const updateStatistics = useCallback(async () => {
     if (isUpdated) return;
     setLoading(true);
@@ -39,11 +33,11 @@ function useStatistics() {
     }
     const newStatistics = calculateStatistics(successfulPokemon);
     setStatistics({ [hash]: newStatistics });
-    console.log("newStatistics", newStatistics);
     setLoading(false);
   }, [statistics, setStatistics, likedPokemonNames, hash]);
+
   return {
-    statistics: statistics == null ? null : statistics[hash],
+    statistics: statistics == null ? null : statistics[Object.keys(statistics)[0]],
     isUpdated,
     updateStatistics,
     errorReasons,
@@ -77,7 +71,26 @@ export default function StatsPage() {
 }
 
 function calculateStatistics(pokemons: Pokemon[]): Statistics {
-  const pokemonTypeDistribution: Record<string, number> = {};
+  const pokemonTypeDistribution: Record<string, number> = {
+    normal: 0,
+    fighting: 0,
+    flying: 0,
+    poison: 0,
+    ground: 0,
+    rock: 0,
+    bug: 0,
+    ghost: 0,
+    steel: 0,
+    fire: 0,
+    water: 0,
+    grass: 0,
+    electric: 0,
+    psychic: 0,
+    ice: 0,
+    dragon: 0,
+    dark: 0,
+    fairy: 0,
+  };
 
   for (const pokemon of pokemons) {
     for (const type of pokemon.types) {
@@ -86,6 +99,7 @@ function calculateStatistics(pokemons: Pokemon[]): Statistics {
         pokemonTypeDistribution[typeName]++;
       } else {
         pokemonTypeDistribution[typeName] = 1;
+        console.log("Unknown type", typeName);
       }
     }
   }

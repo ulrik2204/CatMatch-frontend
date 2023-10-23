@@ -71,6 +71,21 @@ export function useLikedPokemon() {
   return { likedPokemonNames, addPokemon, removePokemon };
 }
 
+export function useSeenPokemon() {
+  const [seenPokemonIds, setSeenPokemonIds] = useLocalStorage<number[]>("seenPokemon", []);
+
+  const addSeenPokemonId = (pokemonId: number) => {
+    if (seenPokemonIds.includes(pokemonId)) return;
+    setSeenPokemonIds((prev) => [...prev, pokemonId]);
+  };
+
+  const removeSeenPokemonId = (pokemonId: number) => {
+    setSeenPokemonIds((prev) => prev.filter((id) => id !== pokemonId));
+  };
+
+  return { seenPokemonIds, addSeenPokemonId, removeSeenPokemonId };
+}
+
 export function usePokemonAndMoves(idOrName: string | number): {
   pokemon: Pokemon;
   move1: PokemonMove;
