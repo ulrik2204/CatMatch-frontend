@@ -16,7 +16,7 @@ export default function PageContainer(props: PageContainerProps): ReactElement {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <div className="align-center min-w-screen flex min-h-screen flex-col items-center bg-background">
+    <div className="min-w-screen flex min-h-screen flex-col items-center bg-background text-text">
       <header className="flex w-full justify-center shadow-md">
         <nav
           className="relative flex w-4/5 items-center justify-end p-6 lg:w-2/5 lg:justify-center lg:px-8"

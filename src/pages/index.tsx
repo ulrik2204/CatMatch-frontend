@@ -51,21 +51,19 @@ export default function IndexPage(): ReactElement {
   const [pokemonId, setPokemonId] = useState(512);
   const pokemonAndMoves = usePokemonAndMoves(pokemonId);
   return (
-    <PageContainer>
-      <div>
-        {pokemonAndMoves && (
-          <PokemonCard
-            pokemon={pokemonAndMoves.pokemon}
-            move1={pokemonAndMoves.move1}
-            move2={pokemonAndMoves.move2}
-          />
-        )}
-        <div className="flex flex-row justify-between">
-          <Button onClick={() => setPokemonId((prev) => prev - 1)}>Previous</Button>
-          <div>{pokemonAndMoves?.pokemon.id}</div>
-          <Button onClick={() => setPokemonId((prev) => prev + 1)}>Next</Button>
-        </div>
+    <div>
+      {pokemonAndMoves && (
+        <PokemonCard
+          pokemon={pokemonAndMoves.pokemon}
+          move1={pokemonAndMoves.move1}
+          move2={pokemonAndMoves.move2}
+        />
+      )}
+      <div className="flex flex-row justify-between">
+        <Button onClick={() => setPokemonId((prev) => prev - 1)}>Previous</Button>
+        <div>{pokemonAndMoves?.pokemon.id}</div>
+        <Button onClick={() => setPokemonId((prev) => prev + 1)}>Next</Button>
       </div>
-    </PageContainer>
+    </div>
   );
 }

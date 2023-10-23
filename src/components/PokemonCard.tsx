@@ -5,7 +5,7 @@ import { type ReactElement, useMemo } from "react";
 type PokemonCardProps = {
   pokemon: Pokemon;
   move1: PokemonMove;
-  move2: PokemonMove | undefined;
+  move2?: PokemonMove;
 };
 
 const pokemonTypeColors = {
