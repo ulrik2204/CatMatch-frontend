@@ -51,3 +51,17 @@ export function useLocalStorage<ValueType>(key: string, defaultValue: ValueType)
 export function useSessionStorage<ValueType>(key: string, defaultValue: ValueType) {
   return useStorage(key, defaultValue, window.sessionStorage);
 }
+
+export function useLikedPokemon() {
+  const [likedPokemon, setLikedPokemon] = useLocalStorage<number[]>("likedPokemon", []);
+
+  const addPokemon = (pokemonId: number) => {
+    setLikedPokemon((prev) => [...prev, pokemonId]);
+  };
+
+  const removePokemon = (pokemonId: number) => {
+    setLikedPokemon((prev) => prev.filter((id) => id !== pokemonId));
+  };
+
+  return { likedPokemon, addPokemon, removePokemon };
+}
