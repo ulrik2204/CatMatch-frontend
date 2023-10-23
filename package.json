@@ -19,10 +19,11 @@
     "typescript": "4.9.5"
   },
   "scripts": {
-    "start": "vite",
     "build": "tsc && vite build",
     "serve": "vite preview",
+    "start": "npx http-server ./dist",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "preview": "vite preview",
     "prettier": "prettier --write ."
   },
   "eslintConfig": {
