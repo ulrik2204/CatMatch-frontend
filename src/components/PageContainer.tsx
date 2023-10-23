@@ -89,7 +89,7 @@ export default function PageContainer(props: PageContainerProps): ReactElement {
           </Dialog.Panel>
         </Dialog>
       </header>
-      <main>{props.children}</main>
+      <main className="h-full w-full">{props.children}</main>
     </div>
   );
 }

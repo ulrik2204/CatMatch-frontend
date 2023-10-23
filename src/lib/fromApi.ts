@@ -31,10 +31,10 @@ export function fromApi<T extends Record<string, unknown>>(
   });
 }
 
-export function getPokemonFromApi(idOrName: number) {
+export function getPokemonFromApi(idOrName: string | number) {
   return fromApi<Pokemon>("https://pokeapi.co/api/v2/pokemon/" + idOrName.toString());
 }
 
-export function getMoveFromApi(idOrName: string) {
+export function getMoveFromApi(idOrName: string | number) {
   return fromApi<PokemonMove>("https://pokeapi.co/api/v2/move/" + idOrName.toString());
 }

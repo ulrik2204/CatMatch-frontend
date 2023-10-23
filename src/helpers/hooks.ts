@@ -1,4 +1,8 @@
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
+import { getMoveFromApi, getPokemonFromApi } from "../lib/fromApi";
+import { Pokemon } from "../types/pokemon";
+import { PokemonMove } from "../types/move";
 
 type StorageObject = typeof window.localStorage | typeof window.sessionStorage;
 // useStorage, useLocalStorage and useSessionStorage is taken from, but translated to typescript:
@@ -53,15 +57,43 @@ export function useSessionStorage<ValueType>(key: string, defaultValue: ValueTyp
 }
 
 export function useLikedPokemon() {
-  const [likedPokemon, setLikedPokemon] = useLocalStorage<number[]>("likedPokemon", []);
+  const [likedPokemonNames, setLikedPokemon] = useLocalStorage<string[]>("likedPokemon", []);
 
-  const addPokemon = (pokemonId: number) => {
-    setLikedPokemon((prev) => [...prev, pokemonId]);
+  const addPokemon = (pokemonName: string) => {
+    if (likedPokemonNames.includes(pokemonName)) return;
+    setLikedPokemon((prev) => [...prev, pokemonName]);
   };
 
-  const removePokemon = (pokemonId: number) => {
-    setLikedPokemon((prev) => prev.filter((id) => id !== pokemonId));
+  const removePokemon = (pokemonName: string) => {
+    setLikedPokemon((prev) => prev.filter((name) => name !== pokemonName));
   };
 
-  return { likedPokemon, addPokemon, removePokemon };
+  return { likedPokemonNames, addPokemon, removePokemon };
+}
+
+export function usePokemonAndMoves(idOrName: string | number): {
+  pokemon: Pokemon;
+  move1: PokemonMove;
+  move2?: PokemonMove;
+} | null {
+  const { data: pokemon } = useQuery(["single-pokemon", idOrName], () =>
+    getPokemonFromApi(idOrName),
+  );
+
+  const [selectedMove1, selectedMove2] = useMemo(() => {
+    if (!pokemon || pokemon.moves.length === 0) return [null, null];
+    if (pokemon.moves.length === 1) return [pokemon.moves[0], null];
+    return pokemon.moves.slice(0, 2);
+  }, [pokemon?.moves]);
+
+  const { data: move1 } = useQuery(["move1", selectedMove1?.move.name], () =>
+    selectedMove1 != null ? getMoveFromApi(selectedMove1.move.name) : null,
+  );
+  const { data: move2 } = useQuery(["move2", selectedMove2?.move.name], () =>
+    selectedMove2 != null ? getMoveFromApi(selectedMove2.move.name) : null,
+  );
+  if (!pokemon || !move1) return null;
+  if (!move2 && pokemon.moves.length > 1) return null;
+
+  return { pokemon, move1, move2: move2 ?? undefined };
 }

@@ -5,6 +5,7 @@ import IndexPage from "./pages";
 import PageContainer from "./components/PageContainer";
 import LikesPage from "./pages/likes";
 import StatsPage from "./pages/stats";
+import SinglePokemonCardPage from "./pages/single";
 
 const queryClient = new QueryClient();
 
@@ -20,6 +21,14 @@ const router = createBrowserRouter([
   {
     path: "/stats",
     element: <StatsPage />,
+  },
+  {
+    path: "/single/:idOrName",
+    element: <SinglePokemonCardPage />,
+  },
+  {
+    path: "*",
+    element: <div>404</div>,
   },
 ]);
 
