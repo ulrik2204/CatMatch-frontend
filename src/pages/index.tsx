@@ -12,7 +12,7 @@ function getRandomPokemonId(prevIds: number[]) {
 }
 
 export default function IndexPage(): ReactElement {
-  const [pokemonId, setPokemonId] = useState(getRandomPokemonId([-1]));
+  const [pokemonId, setPokemonId] = useState(getRandomPokemonId([]));
   const pokemonAndMoves = usePokemonAndMoves(pokemonId);
   const { addPokemon } = useLikedPokemon();
   const { seenPokemonIds, addSeenPokemonId } = useSeenPokemon();
@@ -40,6 +40,7 @@ export default function IndexPage(): ReactElement {
             move2={pokemonAndMoves.move2}
           />
         )}
+        {pokemonId === -1 && <div>Out of Pokemon!</div>}
       </div>
       <div className="flex w-64 flex-row justify-between">
         <Button onClick={handleDislike}>Dislike</Button>

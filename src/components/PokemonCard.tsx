@@ -84,8 +84,6 @@ function formatMoveFlavorText(flavorText: string) {
 }
 
 function Move({ move }: { move: PokemonMove }) {
-  // TODO: make this input to PokemonCard instead of doing the request here
-
   const flavorText = useMemo(() => {
     const moves = move?.flavor_text_entries ?? [];
     const selectedText = moves

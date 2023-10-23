@@ -2,7 +2,6 @@ import { idText } from "typescript";
 import { PokemonMove } from "../types/move";
 import { Pokemon } from "../types/pokemon";
 
-// TODO: Implement fromApi
 export type FromApiOptions = {
   method?: "GET" | "POST" | "PUT" | "DELETE";
   headers?: Headers;
@@ -47,8 +46,8 @@ export async function getManyPokemonFromApi(
     promises.push(getPokemonFromApi(nameOrId));
   }
   const settled = await Promise.allSettled(promises);
-  const [successfulPokemon, rejectedPokemonReasons]: [Pokemon[], string[]] = settled.reduce(
-    (result: [Pokemon[], string[]], pokemon) => {
+  const [successfulPokemon, rejectedPokemonReasons] = settled.reduce(
+    (result, pokemon) => {
       const [successful, rejected] = result;
       if (pokemon.status === "rejected") return [successful, [...rejected, pokemon.reason]];
       return [[...successful, pokemon.value], rejected] as [Pokemon[], string[]];
