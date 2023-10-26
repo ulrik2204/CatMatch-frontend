@@ -38,7 +38,6 @@ export default function IndexPage(): ReactElement {
         <Button onClick={handleDislike} color="secondary">
           Dislike
         </Button>
-        <div>{pokemonAndMoves?.pokemon.id}</div>
         <Button onClick={handleLike}>Like</Button>
       </div>
     </div>
