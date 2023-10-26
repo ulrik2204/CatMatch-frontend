@@ -1,13 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import Button from "../components/Button";
-import { useLikedPokemon, useLocalStorage, useSeenPokemon } from "../helpers/hooks";
-import { getManyPokemonFromApi } from "../lib/fromApi";
-import { Pokemon } from "../types/pokemon";
 import {
   Bar,
   BarChart,
-  CartesianGrid,
-  Label,
   Legend,
   Rectangle,
   ResponsiveContainer,
@@ -16,6 +10,11 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { useLikedPokemon, useLocalStorage, usePokemonIdCursor } from "../helpers/hooks";
+import { getManyPokemonFromApi } from "../lib/fromApi";
+import { type Pokemon } from "../types/pokemon";
+
+type DistributionType = Record<string, { type: string; count: number }>;
 
 type Statistics = {
   likedPokemonCount: number;
@@ -27,50 +26,18 @@ type Statistics = {
   };
 };
 
-function useStatistics() {
-  const { likedPokemonNames } = useLikedPokemon();
-  const { seenPokemonIds } = useSeenPokemon();
-  const [statistics, setStatistics] = useLocalStorage<Record<string, Statistics> | null>(
-    "statistics",
-    null,
-  );
-  const hash = JSON.stringify(likedPokemonNames);
-  const isUpdated = statistics != null && hash in statistics;
-  const [loading, setLoading] = useState(false);
-  const [errorReasons, setErrorReasons] = useState<string[] | undefined>(undefined);
-
-  const updateStatistics = useCallback(async () => {
-    if (isUpdated) return;
-    setLoading(true);
-    const [successfulPokemon, rejectedPokemon] = await getManyPokemonFromApi(likedPokemonNames);
-    if (rejectedPokemon.length > 0) {
-      setErrorReasons(rejectedPokemon);
-    }
-    const newStatistics = calculateStatistics(successfulPokemon);
-    const likeDislikeRatio = newStatistics.likedPokemonCount / seenPokemonIds.length;
-    setStatistics({ [hash]: { ...newStatistics, likeDislikeRatio } });
-    setLoading(false);
-  }, [statistics, setStatistics, likedPokemonNames, hash]);
-
-  return {
-    statistics: statistics == null ? null : statistics[Object.keys(statistics)[0]],
-    isUpdated,
-    updateStatistics,
-    errorReasons,
-    loading,
-  };
-}
-
 export default function StatsPage() {
   const { statistics, updateStatistics, errorReasons, loading } = useStatistics();
-  const data = useMemo(() => {
+
+  // To sort the type-like distribution
+  const sortedDistribution = useMemo(() => {
     if (statistics === null) return null;
     return Object.values(statistics.pokemonTypeDistribution).sort((a, b) => b.count - a.count);
   }, [statistics]);
 
   useEffect(() => {
-    updateStatistics();
-  }, []);
+    updateStatistics().catch(console.error);
+  }, [updateStatistics]);
 
   return (
     <div className="flex w-full flex-col items-center pt-8">
@@ -79,20 +46,25 @@ export default function StatsPage() {
         {loading && <div>Updating...</div>}
         <div>{errorReasons?.map((reason) => <div>{reason}</div>)}</div>
       </div>
-      {statistics && data && (
+      {statistics && sortedDistribution && (
         <div className="flex w-full flex-col items-center pt-4">
           <div className="pt-2">
             <div>Liked pokemon count: {statistics.likedPokemonCount}</div>
             <div>Like-dislike ratio: {(statistics.likeDislikeRatio * 100).toFixed(2)} %</div>
             <div>Most liked type: {statistics.mostLikedPokemonType.type}</div>
           </div>
-          <div className="flex w-5/6 flex-col items-center pt-4 md:w-2/5">
+          <div className="flex w-5/6 flex-col items-center pt-4 md:w-1/2">
             <h2>Number of liked pokemon per type</h2>
             <ResponsiveContainer width="100%" height={1000}>
-              <BarChart data={data} layout="vertical" margin={{ top: 16 }} className="h-96 w-56">
+              <BarChart
+                data={sortedDistribution}
+                layout="vertical"
+                margin={{ top: 16 }}
+                className="h-96 w-56"
+              >
                 <Text />
                 <XAxis dataKey="count" type="number" />
-                <YAxis dataKey="type" type="category" />
+                <YAxis dataKey="type" fontSize={14} type="category" />
                 <Tooltip />
                 <Legend />
                 <Bar
@@ -109,7 +81,7 @@ export default function StatsPage() {
     </div>
   );
 }
-type DistributionType = { [type: string]: { type: string; count: number } };
+
 function calculateStatistics(pokemons: Pokemon[]): Omit<Statistics, "likeDislikeRatio"> {
   const pokemonTypeDistribution: DistributionType = {
     normal: { type: "normal", count: 0 },
@@ -156,5 +128,39 @@ function calculateStatistics(pokemons: Pokemon[]): Omit<Statistics, "likeDislike
     likedPokemonCount: pokemons.length,
     pokemonTypeDistribution,
     mostLikedPokemonType,
+  };
+}
+
+function useStatistics() {
+  const { likedPokemonNames } = useLikedPokemon();
+  const { pokemonIdCursor: numberOfSeenPokemon } = usePokemonIdCursor();
+  const [statistics, setStatistics] = useLocalStorage<Record<string, Statistics> | null>(
+    "statistics",
+    null,
+  );
+  const hash = JSON.stringify(likedPokemonNames);
+  const isUpdated = statistics != null && hash in statistics;
+  const [loading, setLoading] = useState(false);
+  const [errorReasons, setErrorReasons] = useState<string[] | undefined>(undefined);
+
+  const updateStatistics = useCallback(async () => {
+    if (isUpdated) return;
+    setLoading(true);
+    const [successfulPokemon, rejectedPokemon] = await getManyPokemonFromApi(likedPokemonNames);
+    if (rejectedPokemon.length > 0) {
+      setErrorReasons(rejectedPokemon);
+    }
+    const newStatistics = calculateStatistics(successfulPokemon);
+    const likeDislikeRatio = newStatistics.likedPokemonCount / numberOfSeenPokemon;
+    setStatistics({ [hash]: { ...newStatistics, likeDislikeRatio } });
+    setLoading(false);
+  }, [statistics, setStatistics, likedPokemonNames, hash]);
+
+  return {
+    statistics: statistics == null ? null : statistics[Object.keys(statistics)[0]],
+    isUpdated,
+    updateStatistics,
+    errorReasons,
+    loading,
   };
 }

@@ -1,11 +1,11 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useState } from "react";
-import { getMoveFromApi, getPokemonAndMovesFromApi, getPokemonFromApi } from "../lib/fromApi";
-import { Pokemon } from "../types/pokemon";
-import { PokemonMove } from "../types/move";
-import { preview } from "vite";
+import { useCallback, useEffect, useState, type Dispatch, type SetStateAction } from "react";
+import { getPokemonAndMovesFromApi } from "../lib/fromApi";
+import { type PokemonMove } from "../types/move";
+import { type Pokemon } from "../types/pokemon";
+import { MAX_POKEMON_ID, MIN_POKEMON_ID } from "./constants";
 
-type StorageObject = typeof window.localStorage | typeof window.sessionStorage;
+type StorageObject = typeof window.localStorage;
 // useStorage, useLocalStorage and useSessionStorage is taken from, but translated to typescript:
 // https://github.com/WebDevSimplified/useful-custom-react-hooks/blob/main/src/8-useStorage/useStorage.js
 
@@ -24,7 +24,7 @@ function useStorage<ValueType>(
   const [value, setValue] = useState<ValueType>(() => {
     const value = storageObject.getItem(key);
     if (value != null) {
-      return JSON.parse(value);
+      return JSON.parse(value) as ValueType;
     }
     return defaultValue;
   });
@@ -72,106 +72,96 @@ export function useLikedPokemon() {
   return { likedPokemonNames, addPokemon, removePokemon };
 }
 
-export function useSeenPokemon() {
-  const [seenPokemonIds, setSeenPokemonIds] = useLocalStorage<number[]>("seenPokemon", []);
-
-  const addSeenPokemonId = (pokemonId: number) => {
-    if (seenPokemonIds.includes(pokemonId)) return;
-    setSeenPokemonIds((prev) => [...prev, pokemonId]);
-  };
-
-  const removeSeenPokemonId = (pokemonId: number) => {
-    setSeenPokemonIds((prev) => prev.filter((id) => id !== pokemonId));
-  };
-
-  return { seenPokemonIds, addSeenPokemonId, removeSeenPokemonId };
-}
-
-function generateRandomNumber(seed: number, cursor: number, min: number, max: number) {
-  // Loop around if the cursor is outside of min and max.
+/**
+ * Function to generate a random number between min and max, based on a seed and a cursor.
+ * @param randomSeed A seed to generate the random number from. Should be a stored true random number.
+ * @param cursor A value representing which number in a sequence to return.
+ * @param min The minimum number (inclusive) to return.
+ * @param max The maximum number (exclusive) to return.
+ * @returns A random number between min and max.
+ * The function will always return the same number for the same seed and cursor,
+ * but the values will be unique for a constant seed and a changing cursor between min and max.
+ *
+ */
+function generateRandomNumber(randomSeed: number, cursor: number, min: number, max: number) {
+  // Loop around if the cursor is outside of min or max.
   const modularCursor = (cursor % max) + min;
 
-  const combinedSeed = seed ^ modularCursor; // XOR to mix cursor and seed
+  const combinedSeed = randomSeed ^ modularCursor; // XOR to mix cursor and seed
   const x = Math.sin(combinedSeed) * 10000; // A seeded pseudo-random number generator
   const rawRandom = x - Math.floor(x); // Normalize to [0, 1]
 
   return min + Math.floor(rawRandom * (max - min));
 }
 
-// export function useRandomNumberDistribution(min: number, max: number, seed: number) {
+export function usePokemonIdCursor() {
+  const [pokemonIdCursor, setPokemonIdCursor] = useLocalStorage<number>("pokemonIdCursor", 1);
 
-//   const nextRandomNumber = useCallback(
-//     (cursor: number) => {
-//       setRandomNumber(generateRandomNumber(cursor));
-//     },
-//     [min, max, seed],
-//   );
-
-//   return { randomNumber, nextRandomNumber };
-// }
+  const incrementPokemonIdCursor = useCallback(() => {
+    setPokemonIdCursor((prev) => prev + 1);
+  }, [setPokemonIdCursor]);
+  return { pokemonIdCursor, incrementPokemonIdCursor };
+}
 
 function useRandomPokemonId() {
-  const MIN_POKEMON_ID = 1;
-  const MAX_POKEMON_ID = 1018;
   const [pokemonIdSeed] = useLocalStorage("pokemonIdSeed", Math.floor(Math.random() * 1000));
-  const [pokemonIdCursor, setPokemonIdCursor] = useLocalStorage<number>("pokemonIdCursor", 1);
+  const { pokemonIdCursor, incrementPokemonIdCursor } = usePokemonIdCursor();
   const [pokemonId, setPokemonId] = useState<number>(
-    generateRandomNumber(pokemonIdSeed, pokemonIdCursor, MIN_POKEMON_ID, MAX_POKEMON_ID),
+    generateRandomNumber(pokemonIdSeed, pokemonIdCursor, MIN_POKEMON_ID, MAX_POKEMON_ID + 1),
   );
 
   const previewNextPokemonId = useCallback(() => {
-    return generateRandomNumber(pokemonIdSeed, pokemonIdCursor + 1, MIN_POKEMON_ID, MAX_POKEMON_ID);
+    return generateRandomNumber(
+      pokemonIdSeed,
+      pokemonIdCursor + 1,
+      MIN_POKEMON_ID,
+      MAX_POKEMON_ID + 1,
+    );
   }, [pokemonIdSeed, pokemonIdCursor]);
 
   const nextPokemonId = useCallback(() => {
     setPokemonId(previewNextPokemonId());
-    setPokemonIdCursor((prev) => prev + 1);
-  }, [setPokemonId, setPokemonIdCursor, previewNextPokemonId]);
+    incrementPokemonIdCursor();
+  }, [setPokemonId, incrementPokemonIdCursor, previewNextPokemonId]);
 
   return { pokemonId, previewNextPokemonId, nextPokemonId };
 }
 
-export function usePokemonAndMoves(): {
-  data:
-    | {
-        pokemon: Pokemon;
-        move1: PokemonMove;
-        move2?: PokemonMove;
-      }
-    | undefined;
-  nextPokemon: () => void;
-} {
-  const { pokemonId, previewNextPokemonId, nextPokemonId } = useRandomPokemonId();
-  console.log("pokeid", pokemonId);
-  const queryClient = useQueryClient();
-  const { data: pokemonAndMoves } = useQuery(["single-pokemon", pokemonId], () =>
-    getPokemonAndMovesFromApi(pokemonId),
+export function usePokemonAndMoves(idOrName: number | string) {
+  const { data: pokemonAndMoves } = useQuery(["single-pokemon", idOrName], () =>
+    getPokemonAndMovesFromApi(idOrName),
   );
   const pokemon = pokemonAndMoves?.pokemon;
   const [move1, move2] = pokemonAndMoves?.moves ?? [undefined, undefined];
 
-  const prefetch = useCallback(() => {
-    const nextId = previewNextPokemonId();
-    queryClient.prefetchQuery(["single-pokemon", nextId], () => getPokemonAndMovesFromApi(nextId));
-  }, [pokemonId, queryClient]);
+  if (!pokemon || !move1) return undefined;
+  if (!move2 && pokemon.moves.length > 1) return undefined;
 
-  // const { data: move1 } = useQuery(["move1", selectedMove1?.move.name], () =>
-  //   selectedMove1 != null ? getMoveFromApi(selectedMove1.move.name) : null,
-  // );
-  // const { data: move2 } = useQuery(["move2", selectedMove2?.move.name], () =>
-  //   selectedMove2 != null ? getMoveFromApi(selectedMove2.move.name) : null,
-  // );
+  return { pokemon, move1, move2: move2 ?? undefined };
+}
+
+export function useRandomPokemonAndMoves(): {
+  data: { pokemon: Pokemon; move1: PokemonMove; move2?: PokemonMove } | undefined;
+  nextPokemon: () => void;
+} {
+  const queryClient = useQueryClient();
+  const { pokemonId, previewNextPokemonId, nextPokemonId } = useRandomPokemonId();
+  const pokemonAndMoves = usePokemonAndMoves(pokemonId);
+
+  const prefetch = useCallback(async () => {
+    const nextId = previewNextPokemonId();
+    await queryClient.prefetchQuery(["single-pokemon", nextId], () =>
+      getPokemonAndMovesFromApi(nextId),
+    );
+  }, [pokemonId, queryClient, previewNextPokemonId]);
 
   const nextPokemon = useCallback(() => {
     nextPokemonId();
   }, [nextPokemonId]);
 
   useEffect(() => {
-    prefetch();
-  }, [pokemonId]);
+    prefetch().catch((err) => console.error(err));
+  }, [pokemonId, prefetch]);
 
-  if (!pokemon || !move1) return { data: undefined, nextPokemon };
-  if (!move2 && pokemon.moves.length > 1) return { data: undefined, nextPokemon };
-
-  return { data: { pokemon, move1, move2: move2 ?? undefined }, nextPokemon };
+  return { data: pokemonAndMoves, nextPokemon };
 }

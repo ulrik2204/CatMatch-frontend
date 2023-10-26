@@ -1,18 +1,12 @@
-import { type ReactElement, useState, useCallback } from "react";
-import PokemonCard from "../components/PokemonCard";
+import { useCallback, type ReactElement } from "react";
 import Button from "../components/Button";
-import { useLikedPokemon, usePokemonAndMoves, useSeenPokemon } from "../helpers/hooks";
-
-function getRandomPokemonId(prevIds: number[]) {
-  const maxIdNumber = 1017;
-  if (prevIds.length === maxIdNumber) return -1;
-  const rand = Math.floor(Math.random() * maxIdNumber);
-  if (rand in prevIds) return getRandomPokemonId([...prevIds, rand]);
-  return rand;
-}
+import PokemonCard from "../components/PokemonCard";
+import { MAX_POKEMON_ID } from "../helpers/constants";
+import { useLikedPokemon, usePokemonIdCursor, useRandomPokemonAndMoves } from "../helpers/hooks";
 
 export default function IndexPage(): ReactElement {
-  const { data: pokemonAndMoves, nextPokemon } = usePokemonAndMoves();
+  const { data: pokemonAndMoves, nextPokemon } = useRandomPokemonAndMoves();
+  const { pokemonIdCursor } = usePokemonIdCursor();
   const { addPokemon } = useLikedPokemon();
 
   const handleLike = useCallback(() => {
@@ -36,10 +30,12 @@ export default function IndexPage(): ReactElement {
             move2={pokemonAndMoves.move2}
           />
         )}
-        {/* {pokemonId === -1 && <div>Out of Pokemon!</div>} */}
+        {pokemonIdCursor === MAX_POKEMON_ID && <div>Out of Pokemon!</div>}
       </div>
       <div className="flex w-64 flex-row justify-between">
-        <Button onClick={handleDislike}>Dislike</Button>
+        <Button onClick={handleDislike} color="secondary">
+          Dislike
+        </Button>
         <div>{pokemonAndMoves?.pokemon.id}</div>
         <Button onClick={handleLike}>Like</Button>
       </div>
