@@ -12,23 +12,19 @@ function getRandomPokemonId(prevIds: number[]) {
 }
 
 export default function IndexPage(): ReactElement {
-  const [pokemonId, setPokemonId] = useState(getRandomPokemonId([]));
-  const pokemonAndMoves = usePokemonAndMoves(pokemonId);
+  const { data: pokemonAndMoves, nextPokemon } = usePokemonAndMoves();
   const { addPokemon } = useLikedPokemon();
-  const { seenPokemonIds, addSeenPokemonId } = useSeenPokemon();
 
   const handleLike = useCallback(() => {
     if (!pokemonAndMoves) return;
     addPokemon(pokemonAndMoves.pokemon.name);
-    addSeenPokemonId(pokemonId);
-    setPokemonId(getRandomPokemonId([...seenPokemonIds, pokemonId]));
-  }, [addPokemon, pokemonId, pokemonAndMoves]);
+    nextPokemon();
+  }, [addPokemon, pokemonAndMoves]);
 
   const handleDislike = useCallback(() => {
     if (!pokemonAndMoves) return;
-    addSeenPokemonId(pokemonId);
-    setPokemonId(getRandomPokemonId([...seenPokemonIds, pokemonId]));
-  }, [addPokemon, pokemonId, pokemonAndMoves]);
+    nextPokemon();
+  }, [addPokemon, pokemonAndMoves]);
 
   return (
     <div className="flex flex-col items-center pt-16">
@@ -40,7 +36,7 @@ export default function IndexPage(): ReactElement {
             move2={pokemonAndMoves.move2}
           />
         )}
-        {pokemonId === -1 && <div>Out of Pokemon!</div>}
+        {/* {pokemonId === -1 && <div>Out of Pokemon!</div>} */}
       </div>
       <div className="flex w-64 flex-row justify-between">
         <Button onClick={handleDislike}>Dislike</Button>

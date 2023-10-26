@@ -56,3 +56,17 @@ export async function getManyPokemonFromApi(
   );
   return [successfulPokemon, rejectedPokemonReasons];
 }
+
+export async function getPokemonAndMovesFromApi(
+  idOrName: string | number,
+  numberOfMoves: number = 2,
+) {
+  const pokemon = await getPokemonFromApi(idOrName);
+  const moves = [];
+  for (let i = 0; i < numberOfMoves; i++) {
+    if (pokemon.moves.length <= i) break;
+    const move = await getMoveFromApi(pokemon.moves[i].move.name);
+    moves.push(move);
+  }
+  return { pokemon, moves };
+}
