@@ -146,15 +146,16 @@ function useStatistics() {
   const updateStatistics = useCallback(async () => {
     if (isUpdated) return;
     setLoading(true);
+
     const [successfulPokemon, rejectedPokemon] = await getManyPokemonFromApi(likedPokemonNames);
-    if (rejectedPokemon.length > 0) {
-      setErrorReasons(rejectedPokemon);
-    }
+    setErrorReasons(rejectedPokemon.length > 0 ? rejectedPokemon : undefined);
+
     const newStatistics = calculateStatistics(successfulPokemon);
     const likeDislikeRatio = newStatistics.likedPokemonCount / numberOfSeenPokemon;
+
     setStatistics({ [hash]: { ...newStatistics, likeDislikeRatio } });
     setLoading(false);
-  }, [statistics, setStatistics, likedPokemonNames, hash]);
+  }, [statistics, setStatistics, likedPokemonNames, isUpdated, hash]);
 
   return {
     statistics: statistics == null ? null : statistics[Object.keys(statistics)[0]],
