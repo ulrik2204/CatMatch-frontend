@@ -45,11 +45,13 @@ export default function PokemonCard(props: PokemonCardProps): ReactElement {
         <div className="flex w-11/12 flex-col">
           <h2 className="font-bold capitalize">{props.pokemon.name}</h2>
           <div className="flex h-32 w-full flex-col items-center justify-center rounded border-4 border-gray-400 bg-white">
-            <img
-              src={props.imageSrcExtractor?.(props.pokemon)}
-              alt="Picture"
-              className="h-28 object-contain"
-            />
+            <div className="h-28">
+              <img
+                src={props.imageSrcExtractor?.(props.pokemon)}
+                alt="Picture"
+                className="h-28 object-contain"
+              />
+            </div>
             <div className="flex h-3 w-full items-center justify-center bg-gray-300 text-[0.4rem]">
               No: {props.pokemon.id} | H: {props.pokemon.height} | W: {props.pokemon.weight}
             </div>
