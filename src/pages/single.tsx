@@ -1,6 +1,7 @@
 import { useParams } from "react-router-dom";
 import PokemonCard from "../components/PokemonCard";
 import { usePokemonAndMoves } from "../helpers/hooks";
+import { imageSrcExtractor } from "../helpers/utils";
 
 export default function SinglePokemonCardPage() {
   const params = useParams();
@@ -13,6 +14,7 @@ export default function SinglePokemonCardPage() {
           pokemon={pokemonAndMoves.pokemon}
           move1={pokemonAndMoves.move1}
           move2={pokemonAndMoves.move2}
+          imageSrcExtractor={imageSrcExtractor}
         />
       )}
     </div>

@@ -1,11 +1,12 @@
+import { useMemo, type ReactElement } from "react";
 import { type PokemonMove } from "../types/move";
-import { type Pokemon, type Move } from "../types/pokemon";
-import { type ReactElement, useMemo } from "react";
+import { type Move, type Pokemon } from "../types/pokemon";
 
 type PokemonCardProps = {
   pokemon: Pokemon;
   move1: PokemonMove;
   move2?: PokemonMove;
+  imageSrcExtractor: (pokemon: Pokemon) => string;
 };
 
 const pokemonTypeColors = {
@@ -45,7 +46,7 @@ export default function PokemonCard(props: PokemonCardProps): ReactElement {
           <h2 className="font-bold capitalize">{props.pokemon.name}</h2>
           <div className="flex h-32 w-full flex-col items-center justify-center rounded border-4 border-gray-400 bg-white">
             <img
-              src={props.pokemon.sprites.other["official-artwork"].front_default}
+              src={props.imageSrcExtractor?.(props.pokemon)}
               alt="Picture"
               className="h-28 object-contain"
             />

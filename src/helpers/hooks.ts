@@ -127,9 +127,12 @@ function useRandomPokemonId() {
   return { pokemonId, previewNextPokemonId, nextPokemonId };
 }
 
-export function usePokemonAndMoves(idOrName: number | string) {
+export function usePokemonAndMoves(
+  idOrName: number | string,
+  imageSrcExtractorForImagePreloading?: (pokemon: Pokemon) => string,
+) {
   const { data: pokemonAndMoves } = useQuery(["single-pokemon", idOrName], () =>
-    getPokemonAndMovesFromApi(idOrName),
+    getPokemonAndMovesFromApi(idOrName, 2, imageSrcExtractorForImagePreloading),
   );
   const pokemon = pokemonAndMoves?.pokemon;
   const [move1, move2] = pokemonAndMoves?.moves ?? [undefined, undefined];
@@ -140,18 +143,20 @@ export function usePokemonAndMoves(idOrName: number | string) {
   return { pokemon, move1, move2: move2 ?? undefined };
 }
 
-export function useRandomPokemonAndMoves(): {
+export function useRandomPokemonAndMoves(
+  imageSrcExtractorForImagePreloading?: (pokemon: Pokemon) => string,
+): {
   data: { pokemon: Pokemon; move1: PokemonMove; move2?: PokemonMove } | undefined;
   nextPokemon: () => void;
 } {
   const queryClient = useQueryClient();
   const { pokemonId, previewNextPokemonId, nextPokemonId } = useRandomPokemonId();
-  const pokemonAndMoves = usePokemonAndMoves(pokemonId);
+  const pokemonAndMoves = usePokemonAndMoves(pokemonId, imageSrcExtractorForImagePreloading);
 
   const prefetch = useCallback(async () => {
     const nextId = previewNextPokemonId();
     await queryClient.prefetchQuery(["single-pokemon", nextId], () =>
-      getPokemonAndMovesFromApi(nextId),
+      getPokemonAndMovesFromApi(nextId, 2, imageSrcExtractorForImagePreloading),
     );
   }, [pokemonId, queryClient, previewNextPokemonId]);
 

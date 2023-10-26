@@ -3,9 +3,10 @@ import Button from "../components/Button";
 import PokemonCard from "../components/PokemonCard";
 import { MAX_POKEMON_ID } from "../helpers/constants";
 import { useLikedPokemon, usePokemonIdCursor, useRandomPokemonAndMoves } from "../helpers/hooks";
+import { imageSrcExtractor } from "../helpers/utils";
 
 export default function IndexPage(): ReactElement {
-  const { data: pokemonAndMoves, nextPokemon } = useRandomPokemonAndMoves();
+  const { data: pokemonAndMoves, nextPokemon } = useRandomPokemonAndMoves(imageSrcExtractor);
   const { pokemonIdCursor } = usePokemonIdCursor();
   const { addPokemon } = useLikedPokemon();
 
@@ -28,6 +29,7 @@ export default function IndexPage(): ReactElement {
             pokemon={pokemonAndMoves.pokemon}
             move1={pokemonAndMoves.move1}
             move2={pokemonAndMoves.move2}
+            imageSrcExtractor={imageSrcExtractor}
           />
         )}
         {pokemonIdCursor === MAX_POKEMON_ID && <div>Out of Pokemon!</div>}
