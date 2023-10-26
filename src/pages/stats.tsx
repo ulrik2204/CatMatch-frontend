@@ -138,7 +138,7 @@ function useStatistics() {
     "statistics",
     null,
   );
-  const hash = JSON.stringify(likedPokemonNames);
+  const hash = JSON.stringify({ likedPokemonNames, numberOfSeenPokemon });
   const isUpdated = statistics != null && hash in statistics;
   const [loading, setLoading] = useState(false);
   const [errorReasons, setErrorReasons] = useState<string[] | undefined>(undefined);
