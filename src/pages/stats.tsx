@@ -44,7 +44,7 @@ export default function StatsPage() {
       <h1>Statistics</h1>
       <div className="flex h-8 flex-col items-center">
         {loading && <div>Updating...</div>}
-        <div>{errorReasons?.map((reason) => <div>{reason}</div>)}</div>
+        <div>{errorReasons?.map((reason) => <div key={reason}>{reason}</div>)}</div>
       </div>
       {statistics && sortedDistribution && (
         <div className="flex w-full flex-col items-center pt-4">
@@ -155,7 +155,7 @@ function useStatistics() {
 
     setStatistics({ [hash]: { ...newStatistics, likeDislikeRatio } });
     setLoading(false);
-  }, [statistics, setStatistics, likedPokemonNames, isUpdated, hash]);
+  }, [setStatistics, likedPokemonNames, isUpdated, hash, numberOfSeenPokemon]);
 
   return {
     statistics: statistics == null ? null : statistics[Object.keys(statistics)[0]],

@@ -39,7 +39,7 @@ export default function PokemonCard(props: PokemonCardProps): ReactElement {
     <div className="flex h-80 w-56 flex-col items-center justify-center rounded border bg-pokeborder p-2">
       <div
         className={`flex h-full w-full flex-col items-center rounded ${
-          pokemonTypeColors.hasOwnProperty(pokemonType)
+          Object.prototype.hasOwnProperty.call(pokemonTypeColors, pokemonType)
             ? pokemonTypeColors[pokemonType as keyof typeof pokemonTypeColors]
             : "bg-[#68A090]"
         }`}
@@ -80,6 +80,7 @@ function formatMoveFlavorText(flavorText: string) {
   if (flavorText.length < maximumLength) return flavorText;
   const sentences = flavorText.split(".");
   let selectedText = "";
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     const nextSentence = sentences.shift();
     if (!nextSentence) break;

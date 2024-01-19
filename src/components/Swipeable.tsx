@@ -3,6 +3,7 @@ import {
   type ReactElement,
   type ReactNode,
   type TouchEventHandler,
+  useCallback,
   useEffect,
   useRef,
 } from "react";
@@ -27,16 +28,7 @@ export default function Swipeable({
   const containerRef = useRef<HTMLDivElement>(null);
   const currentRotationRef = useRef<number>(0);
 
-  useEffect(() => {
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onRelase);
-    return () => {
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onRelase);
-    };
-  });
-
-  const updateStyle = (diffs: { diffX: number; diffY: number } | null) => {
+  const updateStyle = useCallback((diffs: { diffX: number; diffY: number } | null) => {
     if (!containerRef.current) {
       return;
     }
@@ -61,9 +53,9 @@ export default function Swipeable({
       const shadowColor = (rotation > 0 ? "#33bb33" : "#bb3333") + shadowOpacity;
       containerRef.current.style.boxShadow = `0 0 0.5rem 0.5rem ${shadowColor}`;
     }
-  };
+  }, []);
 
-  const onTouchBegin: TouchEventHandler<HTMLElement> = (event) => {
+  const onTouchBegin: TouchEventHandler<HTMLElement> = useCallback((event) => {
     if (swipeStartRef.current !== null) {
       return;
     }
@@ -71,19 +63,22 @@ export default function Swipeable({
       startX: event.targetTouches[0].clientX,
       startY: event.targetTouches[0].clientY,
     };
-  };
+  }, []);
 
-  const onTouchMove: TouchEventHandler<HTMLElement> = (event) => {
-    if (swipeStartRef.current === null) {
-      updateStyle(null);
-    } else {
-      const diffX = swipeStartRef.current.startX - event.targetTouches[0].clientX;
-      const diffY = Math.max(0, swipeStartRef.current.startY - event.targetTouches[0].clientY);
-      updateStyle({ diffX, diffY });
-    }
-  };
+  const onTouchMove: TouchEventHandler<HTMLElement> = useCallback(
+    (event) => {
+      if (swipeStartRef.current === null) {
+        updateStyle(null);
+      } else {
+        const diffX = swipeStartRef.current.startX - event.targetTouches[0].clientX;
+        const diffY = Math.max(0, swipeStartRef.current.startY - event.targetTouches[0].clientY);
+        updateStyle({ diffX, diffY });
+      }
+    },
+    [updateStyle],
+  );
 
-  const onMouseDown: MouseEventHandler<HTMLElement> = (event) => {
+  const onMouseDown: MouseEventHandler<HTMLElement> = useCallback((event) => {
     if (swipeStartRef.current !== null) {
       return;
     }
@@ -91,19 +86,22 @@ export default function Swipeable({
       startX: event.clientX,
       startY: event.clientY,
     };
-  };
+  }, []);
 
-  const onMouseMove = (event: MouseEvent) => {
-    if (swipeStartRef.current === null) {
-      updateStyle(null);
-    } else {
-      const diffX = swipeStartRef.current.startX - event.clientX;
-      const diffY = Math.max(0, swipeStartRef.current.startY - event.clientY);
-      updateStyle({ diffX, diffY });
-    }
-  };
+  const onMouseMove = useCallback(
+    (event: MouseEvent) => {
+      if (swipeStartRef.current === null) {
+        updateStyle(null);
+      } else {
+        const diffX = swipeStartRef.current.startX - event.clientX;
+        const diffY = Math.max(0, swipeStartRef.current.startY - event.clientY);
+        updateStyle({ diffX, diffY });
+      }
+    },
+    [updateStyle],
+  );
 
-  const onRelase = () => {
+  const onRelease = useCallback(() => {
     swipeStartRef.current = null;
     updateStyle(null);
     if (currentRotationRef.current > swipeRotationThresholdRadians) {
@@ -112,7 +110,16 @@ export default function Swipeable({
       onDislike();
     }
     currentRotationRef.current = 0;
-  };
+  }, [onDislike, onLike, updateStyle]);
+
+  useEffect(() => {
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onRelease);
+    return () => {
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onRelease);
+    };
+  }, [onMouseMove, onRelease]);
 
   return (
     <div
@@ -120,7 +127,7 @@ export default function Swipeable({
       className="origin-center touch-none select-none"
       onTouchStart={onTouchBegin}
       onTouchMove={onTouchMove}
-      onTouchEnd={onRelase}
+      onTouchEnd={onRelease}
       onMouseDown={onMouseDown}
     >
       {children}

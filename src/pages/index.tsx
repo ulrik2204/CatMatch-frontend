@@ -15,12 +15,12 @@ export default function IndexPage(): ReactElement {
     if (!pokemonAndMoves) return;
     addPokemon(pokemonAndMoves.pokemon.name);
     nextPokemon();
-  }, [addPokemon, pokemonAndMoves]);
+  }, [addPokemon, pokemonAndMoves, nextPokemon]);
 
   const handleDislike = useCallback(() => {
     if (!pokemonAndMoves) return;
     nextPokemon();
-  }, [addPokemon, pokemonAndMoves]);
+  }, [pokemonAndMoves, nextPokemon]);
 
   return (
     <div className="flex flex-col items-center pt-16">
