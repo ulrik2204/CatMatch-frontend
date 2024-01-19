@@ -1,4 +1,5 @@
 import { useMemo, type ReactElement } from "react";
+import { useUserId } from "../helpers/hooks";
 import { type PokemonMove } from "../types/move";
 import { type Move, type Pokemon } from "../types/pokemon";
 
@@ -31,6 +32,7 @@ const pokemonTypeColors = {
 };
 
 export default function PokemonCard(props: PokemonCardProps): ReactElement {
+  const userId = useUserId();
   const pokemonType = props.pokemon.types[0].type.name;
 
   return (
@@ -43,7 +45,7 @@ export default function PokemonCard(props: PokemonCardProps): ReactElement {
         }`}
       >
         <div className="flex w-11/12 flex-col">
-          <h2 className="font-bold capitalize">{props.pokemon.name}</h2>
+          <h2 className="font-bold capitalize">Hei {userId}</h2>
           <div className="flex h-32 w-full flex-col items-center justify-center rounded border-4 border-gray-400 bg-white">
             <div className="h-28">
               <img
