@@ -1,11 +1,19 @@
-import { ReactElement, ReactNode, TouchEventHandler, useRef } from "react";
+import {
+  type MouseEventHandler,
+  type ReactElement,
+  type ReactNode,
+  type TouchEventHandler,
+  useEffect,
+  useRef,
+} from "react";
 
-const swipeRotationThresholdRadians = Math.PI / 30;
-const radiansRotationPerPixelMovement: number = Math.PI / 4600;
-const xTranslationScalingFactor: number = 1 / 3;
-const yTranslationScalingFactor: number = 1 / 4;
+const swipeRotationThresholdRadians = Math.PI / 25;
+const radiansRotationPerPixelMovement = Math.PI / 4600;
+const xTranslationScalingFactor = 1 / 3;
+const yTranslationScalingFactor = 1 / 4;
+const maxShadowOpacity = 0.6;
+const swipeResetTransitionTimeSeconds = 0.4;
 
-const maxShadowOpacity: number = 0.6;
 export default function Swipeable({
   onLike,
   onDislike,
@@ -15,19 +23,18 @@ export default function Swipeable({
   onDislike: () => void;
   children: ReactNode;
 }): ReactElement {
-  const touchStartRef = useRef<TouchStart | null>(null);
+  const swipeStartRef = useRef<SwipeStart | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const currentRotationRef = useRef<number>(0);
 
-  const onTouchStart: TouchEventHandler<HTMLElement> = (event) => {
-    if (touchStartRef.current !== null) {
-      return;
-    }
-    touchStartRef.current = {
-      startX: event.targetTouches[0].clientX,
-      startY: event.targetTouches[0].clientY,
+  useEffect(() => {
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onRelase);
+    return () => {
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onRelase);
     };
-  };
+  });
 
   const updateStyle = (diffs: { diffX: number; diffY: number } | null) => {
     if (!containerRef.current) {
@@ -35,7 +42,7 @@ export default function Swipeable({
     }
     if (diffs === null) {
       containerRef.current.style.transform = "none";
-      containerRef.current.style.transition = "box-shadow transform 0.1s";
+      containerRef.current.style.transition = `box-shadow ${swipeResetTransitionTimeSeconds}s, transform ${swipeResetTransitionTimeSeconds}s`;
       containerRef.current.style.boxShadow = "none";
     } else {
       const { diffX, diffY } = diffs;
@@ -56,18 +63,48 @@ export default function Swipeable({
     }
   };
 
+  const onTouchBegin: TouchEventHandler<HTMLElement> = (event) => {
+    if (swipeStartRef.current !== null) {
+      return;
+    }
+    swipeStartRef.current = {
+      startX: event.targetTouches[0].clientX,
+      startY: event.targetTouches[0].clientY,
+    };
+  };
+
   const onTouchMove: TouchEventHandler<HTMLElement> = (event) => {
-    if (touchStartRef.current === null) {
+    if (swipeStartRef.current === null) {
       updateStyle(null);
     } else {
-      const diffX = touchStartRef.current.startX - event.targetTouches[0].clientX;
-      const diffY = Math.max(0, touchStartRef.current.startY - event.targetTouches[0].clientY);
+      const diffX = swipeStartRef.current.startX - event.targetTouches[0].clientX;
+      const diffY = Math.max(0, swipeStartRef.current.startY - event.targetTouches[0].clientY);
       updateStyle({ diffX, diffY });
     }
   };
 
-  const onTouchEnd: TouchEventHandler<HTMLElement> = () => {
-    touchStartRef.current = null;
+  const onMouseDown: MouseEventHandler<HTMLElement> = (event) => {
+    if (swipeStartRef.current !== null) {
+      return;
+    }
+    swipeStartRef.current = {
+      startX: event.clientX,
+      startY: event.clientY,
+    };
+  };
+
+  const onMouseMove = (event: MouseEvent) => {
+    if (swipeStartRef.current === null) {
+      updateStyle(null);
+    } else {
+      const diffX = swipeStartRef.current.startX - event.clientX;
+      const diffY = Math.max(0, swipeStartRef.current.startY - event.clientY);
+      updateStyle({ diffX, diffY });
+    }
+  };
+
+  const onRelase = () => {
+    swipeStartRef.current = null;
     updateStyle(null);
     if (currentRotationRef.current > swipeRotationThresholdRadians) {
       onLike();
@@ -80,22 +117,18 @@ export default function Swipeable({
   return (
     <div
       ref={containerRef}
-      className="container"
-      style={{
-        transformOrigin: "bottom center",
-        touchAction: "none",
-        transition: "transform 0.1s",
-      }}
-      onTouchStart={onTouchStart}
+      className="origin-center touch-none select-none"
+      onTouchStart={onTouchBegin}
       onTouchMove={onTouchMove}
-      onTouchEnd={onTouchEnd}
+      onTouchEnd={onRelase}
+      onMouseDown={onMouseDown}
     >
       {children}
     </div>
   );
 }
 
-interface TouchStart {
+interface SwipeStart {
   startX: number;
   startY: number;
 }

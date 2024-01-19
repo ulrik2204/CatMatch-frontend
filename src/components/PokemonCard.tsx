@@ -49,6 +49,7 @@ export default function PokemonCard(props: PokemonCardProps): ReactElement {
           <div className="flex h-32 w-full flex-col items-center justify-center rounded border-4 border-gray-400 bg-white">
             <div className="h-28">
               <img
+                draggable={false}
                 src={props.imageSrcExtractor?.(props.pokemon)}
                 alt="Picture"
                 className="h-28 object-contain"

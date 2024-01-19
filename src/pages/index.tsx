@@ -24,7 +24,7 @@ export default function IndexPage(): ReactElement {
 
   return (
     <div className="flex flex-col items-center pt-16">
-      <div className="flex sm:w-1 lg:w-1/3 flex-col items-center">
+      <div className="flex flex-col items-center sm:w-1 lg:w-1/3">
         {pokemonAndMoves && (
           <Swipeable onLike={handleLike} onDislike={handleDislike}>
             <PokemonCard
