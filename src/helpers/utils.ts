@@ -15,3 +15,15 @@ export function preloadImage(src: string) {
 
 export const imageSrcExtractor = (pokemon: Pokemon) =>
   pokemon.sprites.other["official-artwork"].front_default;
+
+export const generateRandomUserId = () => {
+  const choices = "abcdefghijklmnopqrstuvwxyz";
+  const length = 12;
+
+  let userId = "";
+  for (let i = 0; i < length; i++) {
+    userId += choices[Math.floor(choices.length * Math.random())];
+  }
+
+  return userId;
+};

@@ -3,7 +3,8 @@ import { useCallback, useEffect, useState, type Dispatch, type SetStateAction } 
 import { getPokemonAndMovesFromApi } from "../lib/fromApi";
 import { type PokemonMove } from "../types/move";
 import { type Pokemon } from "../types/pokemon";
-import { MAX_POKEMON_ID, MIN_POKEMON_ID } from "./constants";
+import { LOCALSTORAGE_USER_ID_KEY, MAX_POKEMON_ID, MIN_POKEMON_ID } from "./constants";
+import { generateRandomUserId } from "./utils";
 
 type StorageObject = typeof window.localStorage;
 // useStorage, useLocalStorage and useSessionStorage is taken from, but translated to typescript:
@@ -169,4 +170,9 @@ export function useRandomPokemonAndMoves(
   }, [pokemonId, prefetch]);
 
   return { data: pokemonAndMoves, nextPokemon };
+}
+
+export function useUserId() {
+  const [userId] = useLocalStorage<string>(LOCALSTORAGE_USER_ID_KEY, generateRandomUserId());
+  return userId;
 }
