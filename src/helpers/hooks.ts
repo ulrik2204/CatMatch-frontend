@@ -159,7 +159,7 @@ export function useRandomPokemonAndMoves(
     await queryClient.prefetchQuery(["single-pokemon", nextId], () =>
       getPokemonAndMovesFromApi(nextId, 2, imageSrcExtractorForImagePreloading),
     );
-  }, [pokemonId, queryClient, previewNextPokemonId]);
+  }, [queryClient, previewNextPokemonId, imageSrcExtractorForImagePreloading]);
 
   const nextPokemon = useCallback(() => {
     nextPokemonId();
