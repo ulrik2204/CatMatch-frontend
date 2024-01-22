@@ -1,6 +1,6 @@
 import {
-  type ApiFormatCatJudgements,
   CatJudgement,
+  type ApiFormatCatJudgements,
   type CatJudgements,
 } from "../types/catJudgement";
 import { BASE_API_URL, CAT_SUGGESTION_BATCH_SIZE } from "./constants";

@@ -1,4 +1,4 @@
-import { type Dispatch, type SetStateAction, useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import { type CatJudgement, type CatJudgements } from "../types/catJudgement";
 import { CAT_SUGGESTION_BATCH_SIZE, STORAGE_KEYS } from "./constants";
 import { fetchCatIds, preloadImage } from "./utils";

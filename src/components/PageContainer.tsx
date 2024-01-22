@@ -24,8 +24,8 @@ export default function PageContainer(props: PageContainerProps): ReactElement {
         >
           <div className="absolute left-[4vw] w-8 lg:left-[-4vw] lg:flex-1">
             <a href="/" className="-m-1.5 p-1.5">
-              <span className="sr-only">Pokematch</span>
-              <img className="h-8 w-auto" src="/pokematch-192.png" alt="Logo" />
+              <span className="sr-only">CatMatch</span>
+              <img className="h-8 w-auto" src="/CatMatch.png" alt="Logo" />
             </a>
           </div>
           <div className="flex lg:hidden">
