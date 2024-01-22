@@ -1,10 +1,7 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useEffect, useState, type Dispatch, type SetStateAction } from "react";
-import { getPokemonAndMovesFromApi } from "../lib/fromApi";
-import { type PokemonMove } from "../types/move";
-import { type Pokemon } from "../types/pokemon";
-import { LOCALSTORAGE_USER_ID_KEY, MAX_POKEMON_ID, MIN_POKEMON_ID } from "./constants";
-import { generateRandomUserId } from "./utils";
+import { type Dispatch, type SetStateAction, useCallback, useEffect, useState } from "react";
+import { type CatJudgement, type CatJudgements } from "../types/catJudgement";
+import { CAT_SUGGESTION_BATCH_SIZE, STORAGE_KEYS } from "./constants";
+import { fetchCatIds, preloadImage } from "./utils";
 
 type StorageObject = typeof window.localStorage;
 // useStorage, useLocalStorage and useSessionStorage is taken from, but translated to typescript:
@@ -31,7 +28,9 @@ function useStorage<ValueType>(
   });
 
   useEffect(() => {
-    if (value === undefined) return storageObject.removeItem(key);
+    if (value === undefined) {
+      return storageObject.removeItem(key);
+    }
     storageObject.setItem(key, JSON.stringify(value));
   }, [key, value, storageObject]);
 
@@ -58,121 +57,78 @@ export function useSessionStorage<ValueType>(key: string, defaultValue: ValueTyp
   return useStorage(key, defaultValue, window.sessionStorage);
 }
 
-export function useLikedPokemon() {
-  const [likedPokemonNames, setLikedPokemon] = useLocalStorage<string[]>("likedPokemon", []);
+export function useLikedCat() {
+  const [likedCatNames, setLikedCat] = useLocalStorage<string[]>("likedCat", []);
 
-  const addPokemon = (pokemonName: string) => {
-    if (likedPokemonNames.includes(pokemonName)) return;
-    setLikedPokemon((prev) => [...prev, pokemonName]);
+  const addCat = (catName: string) => {
+    if (likedCatNames.includes(catName)) {
+      return;
+    }
+    setLikedCat((prev) => [...prev, catName]);
   };
 
-  const removePokemon = (pokemonName: string) => {
-    setLikedPokemon((prev) => prev.filter((name) => name !== pokemonName));
+  const removeCat = (catName: string) => {
+    setLikedCat((prev) => prev.filter((name) => name !== catName));
   };
 
-  return { likedPokemonNames, addPokemon, removePokemon };
+  return { likedCatNames, addCat, removeCat };
 }
 
-/**
- * Function to generate a random number between min and max, based on a seed and a cursor.
- * @param randomSeed A seed to generate the random number from. Should be a stored true random number.
- * @param cursor A value representing which number in a sequence to return.
- * @param min The minimum number (inclusive) to return.
- * @param max The maximum number (exclusive) to return.
- * @returns A random number between min and max.
- * The function will always return the same number for the same seed and cursor,
- * but the values will be unique for a constant seed and a changing cursor between min and max.
- *
- */
-function generateRandomNumber(randomSeed: number, cursor: number, min: number, max: number) {
-  // Loop around if the cursor is outside of min or max.
-  const modularCursor = (cursor % max) + min;
+export function useCatIdCursor() {
+  const [catIdCursor, setCatIdCursor] = useLocalStorage<number>("catIdCursor", 1);
 
-  const combinedSeed = randomSeed ^ modularCursor; // XOR to mix cursor and seed
-  const x = Math.sin(combinedSeed) * 10000; // A seeded pseudo-random number generator
-  const rawRandom = x - Math.floor(x); // Normalize to [0, 1]
-
-  return min + Math.floor(rawRandom * (max - min));
+  const incrementCatIdCursor = useCallback(() => {
+    setCatIdCursor((prev) => prev + 1);
+  }, [setCatIdCursor]);
+  return { catIdCursor, incrementCatIdCursor };
 }
 
-export function usePokemonIdCursor() {
-  const [pokemonIdCursor, setPokemonIdCursor] = useLocalStorage<number>("pokemonIdCursor", 1);
-
-  const incrementPokemonIdCursor = useCallback(() => {
-    setPokemonIdCursor((prev) => prev + 1);
-  }, [setPokemonIdCursor]);
-  return { pokemonIdCursor, incrementPokemonIdCursor };
-}
-
-function useRandomPokemonId() {
-  const [pokemonIdSeed] = useLocalStorage("pokemonIdSeed", Math.floor(Math.random() * 1000));
-  const { pokemonIdCursor, incrementPokemonIdCursor } = usePokemonIdCursor();
-  const [pokemonId, setPokemonId] = useState<number>(
-    generateRandomNumber(pokemonIdSeed, pokemonIdCursor, MIN_POKEMON_ID, MAX_POKEMON_ID + 1),
-  );
-
-  const previewNextPokemonId = useCallback(() => {
-    return generateRandomNumber(
-      pokemonIdSeed,
-      pokemonIdCursor + 1,
-      MIN_POKEMON_ID,
-      MAX_POKEMON_ID + 1,
-    );
-  }, [pokemonIdSeed, pokemonIdCursor]);
-
-  const nextPokemonId = useCallback(() => {
-    setPokemonId(previewNextPokemonId());
-    incrementPokemonIdCursor();
-  }, [setPokemonId, incrementPokemonIdCursor, previewNextPokemonId]);
-
-  return { pokemonId, previewNextPokemonId, nextPokemonId };
-}
-
-export function usePokemonAndMoves(
-  idOrName: number | string,
-  imageSrcExtractorForImagePreloading?: (pokemon: Pokemon) => string,
-) {
-  const { data: pokemonAndMoves } = useQuery(["single-pokemon", idOrName], () =>
-    getPokemonAndMovesFromApi(idOrName, 2, imageSrcExtractorForImagePreloading),
-  );
-  const pokemon = pokemonAndMoves?.pokemon;
-  const [move1, move2] = pokemonAndMoves?.moves ?? [undefined, undefined];
-
-  if (!pokemon || !move1) return undefined;
-  if (!move2 && pokemon.moves.length > 1) return undefined;
-
-  return { pokemon, move1, move2: move2 ?? undefined };
-}
-
-export function useRandomPokemonAndMoves(
-  imageSrcExtractorForImagePreloading?: (pokemon: Pokemon) => string,
-): {
-  data: { pokemon: Pokemon; move1: PokemonMove; move2?: PokemonMove } | undefined;
-  nextPokemon: () => void;
+export function useSuggestedCatWithPreload(catJudgements: CatJudgements): {
+  suggestedCatId: string | null | undefined;
+  nextCat: () => void;
 } {
-  const queryClient = useQueryClient();
-  const { pokemonId, previewNextPokemonId, nextPokemonId } = useRandomPokemonId();
-  const pokemonAndMoves = usePokemonAndMoves(pokemonId, imageSrcExtractorForImagePreloading);
-
-  const prefetch = useCallback(async () => {
-    const nextId = previewNextPokemonId();
-    await queryClient.prefetchQuery(["single-pokemon", nextId], () =>
-      getPokemonAndMovesFromApi(nextId, 2, imageSrcExtractorForImagePreloading),
-    );
-  }, [queryClient, previewNextPokemonId, imageSrcExtractorForImagePreloading]);
-
-  const nextPokemon = useCallback(() => {
-    nextPokemonId();
-  }, [nextPokemonId]);
+  const [catIds, setCatIds] = useState<string[]>([]);
 
   useEffect(() => {
-    prefetch().catch((err) => console.error(err));
-  }, [pokemonId, prefetch]);
+    if (catIds.length <= CAT_SUGGESTION_BATCH_SIZE) {
+      let cancel = false;
+      void fetchCatIds(catJudgements).then((catIds) => {
+        if (!cancel) {
+          setCatIds((prev) => [...prev, ...catIds.filter((id) => !prev.includes(id))]);
+          void catIds.map(preloadImage).map((promise) =>
+            promise.catch((e) => {
+              console.error(`Failed to preload image`, e);
+            }),
+          );
+        }
+      });
+      return () => {
+        cancel = true;
+      };
+    }
+  }, [catIds.length, catJudgements]);
 
-  return { data: pokemonAndMoves, nextPokemon };
+  const nextCat = useCallback(() => {
+    setCatIds((prev) => prev.slice(1));
+  }, []);
+
+  return { suggestedCatId: catIds[0], nextCat };
 }
 
-export function useUserId() {
-  const [userId] = useLocalStorage<string>(LOCALSTORAGE_USER_ID_KEY, generateRandomUserId());
-  return userId;
+export function useCatJudgements(): {
+  catJudgements: CatJudgements;
+  judgeCat: (catId: string, judgement: CatJudgement) => void;
+} {
+  const [catJudgements, setCatJudgements] = useLocalStorage(STORAGE_KEYS.CAT_JUDGEMENTS, {});
+
+  const judgeCat = useCallback(
+    (catId: string, judgement: CatJudgement) => {
+      setCatJudgements((prev) => {
+        return { ...prev, [catId]: judgement };
+      });
+    },
+    [setCatJudgements],
+  );
+
+  return { catJudgements, judgeCat };
 }

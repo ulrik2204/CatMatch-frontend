@@ -42,7 +42,7 @@ export default function Swipeable({
       currentRotationRef.current = rotation;
       const translationX = -diffX * xTranslationScalingFactor;
       const translationY = -diffY * yTranslationScalingFactor;
-      containerRef.current.style.transform = `rotateZ(${rotation}rad) translate(${translationX}px, ${translationY}px)`;
+      containerRef.current.style.transform = `rotateZ(${-rotation}rad) translate(${translationX}px, ${translationY}px)`;
       containerRef.current.style.transition = "none";
       const shadowOpacity = Math.floor(
         (Math.min(swipeRotationThresholdRadians, Math.abs(rotation)) /
@@ -124,7 +124,7 @@ export default function Swipeable({
   return (
     <div
       ref={containerRef}
-      className="origin-center touch-none select-none"
+      className="origin-top touch-none select-none"
       onTouchStart={onTouchBegin}
       onTouchMove={onTouchMove}
       onTouchEnd={onRelease}

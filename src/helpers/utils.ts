@@ -1,4 +1,9 @@
-import { type Pokemon } from "../types/pokemon";
+import {
+  type ApiFormatCatJudgements,
+  CatJudgement,
+  type CatJudgements,
+} from "../types/catJudgement";
+import { BASE_API_URL, CAT_SUGGESTION_BATCH_SIZE } from "./constants";
 
 export function preloadImage(src: string) {
   return new Promise((resolve, reject) => {
@@ -13,17 +18,39 @@ export function preloadImage(src: string) {
   });
 }
 
-export const imageSrcExtractor = (pokemon: Pokemon) =>
-  pokemon.sprites.other["official-artwork"].front_default;
+export function toApiCatJudgementsFormat(catJudgements: CatJudgements): ApiFormatCatJudgements {
+  return Object.fromEntries(
+    Object.entries(catJudgements).map(([catId, judgement]) => {
+      switch (judgement) {
+        case CatJudgement.LIKE:
+          return [catId, true];
+        case CatJudgement.DISLIKE:
+          return [catId, false];
+        case CatJudgement.NOT_JUDGED:
+          return [catId, null];
+      }
+    }),
+  );
+}
 
-export const generateRandomUserId = () => {
-  const choices = "abcdefghijklmnopqrstuvwxyz";
-  const length = 12;
-
-  let userId = "";
-  for (let i = 0; i < length; i++) {
-    userId += choices[Math.floor(choices.length * Math.random())];
+export async function fetchCatIds(catJudgements: CatJudgements): Promise<string[]> {
+  interface CatSuggestionOptions {
+    number_of_recommendations: number;
+    ratings: ApiFormatCatJudgements;
   }
 
-  return userId;
-};
+  const suggestionOptions: CatSuggestionOptions = {
+    number_of_recommendations: CAT_SUGGESTION_BATCH_SIZE,
+    ratings: toApiCatJudgementsFormat(catJudgements),
+  };
+  const response = await fetch(`${BASE_API_URL}/recommendations`, {
+    body: JSON.stringify(suggestionOptions),
+    method: "post",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  if (!response.ok)
+    throw new Error(`Failed to fetch recommendations: ${JSON.stringify(await response.json())}`);
+  return ((await response.json()) as { recommendations: string[] }).recommendations;
+}

@@ -1,4 +1,3 @@
-import { preloadImage } from "../helpers/utils";
 import { type PokemonMove } from "../types/move";
 import { type Pokemon } from "../types/pokemon";
 
@@ -71,23 +70,4 @@ export async function getManyPokemonFromApi(
     [[], []] as [Pokemon[], string[]],
   );
   return [successfulPokemon, rejectedPokemonReasons];
-}
-
-export async function getPokemonAndMovesFromApi(
-  idOrName: string | number,
-  numberOfMoves = 2,
-  imageSrcExtractorForImagePreloading?: (pokemon: Pokemon) => string,
-) {
-  const pokemon = await getPokemonFromApi(idOrName);
-  const moves = [];
-  if (imageSrcExtractorForImagePreloading) {
-    const image = imageSrcExtractorForImagePreloading(pokemon);
-    preloadImage(image).catch(console.error);
-  }
-  for (let i = 0; i < numberOfMoves; i++) {
-    if (pokemon.moves.length <= i) break;
-    const move = await getMoveFromApi(pokemon.moves[i].move.name);
-    moves.push(move);
-  }
-  return { pokemon, moves };
 }
