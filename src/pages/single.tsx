@@ -1,22 +1,14 @@
 import { useParams } from "react-router-dom";
-import PokemonCard from "../components/PokemonCard";
-import { usePokemonAndMoves } from "../helpers/hooks";
-import { imageSrcExtractor } from "../helpers/utils";
+import CatCard from "../components/CatCard";
 
-export default function SinglePokemonCardPage() {
+export default function SingleCatCardPage() {
   const params = useParams();
-  const idOrName = params.idOrName;
-  const pokemonAndMoves = usePokemonAndMoves(idOrName ?? 1);
+  if (!params.catId) {
+    return <div>No cat ID specified</div>;
+  }
+  const catId = atob(params.catId);
+
   return (
-    <div className="flex flex-col items-center pt-16">
-      {pokemonAndMoves && (
-        <PokemonCard
-          pokemon={pokemonAndMoves.pokemon}
-          move1={pokemonAndMoves.move1}
-          move2={pokemonAndMoves.move2}
-          imageSrcExtractor={imageSrcExtractor}
-        />
-      )}
-    </div>
+    <div className="flex flex-col items-center pt-16">{catId && <CatCard catId={catId} />}</div>
   );
 }

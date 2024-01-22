@@ -4,8 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import IndexPage from "./pages";
 import PageContainer from "./components/PageContainer";
 import LikesPage from "./pages/likes";
-import StatsPage from "./pages/stats";
-import SinglePokemonCardPage from "./pages/single";
+import SingleCatCardPage from "./pages/single";
 
 const queryClient = new QueryClient();
 
@@ -18,13 +17,13 @@ const router = createBrowserRouter([
     path: "/likes",
     element: <LikesPage />,
   },
+  //   {
+  //     path: "/stats",
+  //     element: <StatsPage />,
+  //   },
   {
-    path: "/stats",
-    element: <StatsPage />,
-  },
-  {
-    path: "/single/:idOrName",
-    element: <SinglePokemonCardPage />,
+    path: "/single/:catId",
+    element: <SingleCatCardPage />,
   },
   {
     path: "*",

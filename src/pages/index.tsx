@@ -1,41 +1,36 @@
-import { useCallback, type ReactElement } from "react";
+import { type ReactElement, useCallback } from "react";
 import Button from "../components/Button";
-import PokemonCard from "../components/PokemonCard";
+import CatCard from "../components/CatCard";
 import Swipeable from "../components/Swipeable";
-import { MAX_POKEMON_ID } from "../helpers/constants";
-import { useLikedPokemon, usePokemonIdCursor, useRandomPokemonAndMoves } from "../helpers/hooks";
-import { imageSrcExtractor } from "../helpers/utils";
+import { useCatJudgements, useSuggestedCatWithPreload } from "../helpers/hooks";
+import { CatJudgement } from "../types/catJudgement";
 
 export default function IndexPage(): ReactElement {
-  const { data: pokemonAndMoves, nextPokemon } = useRandomPokemonAndMoves(imageSrcExtractor);
-  const { pokemonIdCursor } = usePokemonIdCursor();
-  const { addPokemon } = useLikedPokemon();
+  const { catJudgements, judgeCat } = useCatJudgements();
+  const { suggestedCatId: currentCatId, nextCat } = useSuggestedCatWithPreload(catJudgements);
 
   const handleLike = useCallback(() => {
-    if (!pokemonAndMoves) return;
-    addPokemon(pokemonAndMoves.pokemon.name);
-    nextPokemon();
-  }, [addPokemon, pokemonAndMoves, nextPokemon]);
+    if (!currentCatId) return;
+    judgeCat(currentCatId, CatJudgement.LIKE);
+    nextCat();
+  }, [nextCat, judgeCat, currentCatId]);
 
   const handleDislike = useCallback(() => {
-    if (!pokemonAndMoves) return;
-    nextPokemon();
-  }, [pokemonAndMoves, nextPokemon]);
+    if (!currentCatId) return;
+    judgeCat(currentCatId, CatJudgement.DISLIKE);
+    nextCat();
+  }, [nextCat, judgeCat, currentCatId]);
 
   return (
-    <div className="flex flex-col items-center pt-16">
-      <div className="flex flex-col items-center sm:w-1 lg:w-1/3">
-        {pokemonAndMoves && (
+    <div className="flex flex-col items-center gap-5 p-2 pt-16">
+      <div className="flex w-full flex-col items-center lg:w-1/3">
+        {currentCatId === undefined && <div>Loading</div>}
+        {currentCatId && (
           <Swipeable onLike={handleLike} onDislike={handleDislike}>
-            <PokemonCard
-              pokemon={pokemonAndMoves.pokemon}
-              move1={pokemonAndMoves.move1}
-              move2={pokemonAndMoves.move2}
-              imageSrcExtractor={imageSrcExtractor}
-            />
+            <CatCard catId={currentCatId} />
           </Swipeable>
         )}
-        {pokemonIdCursor === MAX_POKEMON_ID && <div>Out of Pokemon!</div>}
+        {currentCatId === null && <div>Out of cats!</div>}
       </div>
       <div className="flex w-64 flex-row justify-between">
         <Button onClick={handleDislike} color="secondary">
