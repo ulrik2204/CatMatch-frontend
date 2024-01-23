@@ -1,6 +1,10 @@
+import { BASE_API_URL, CAT_SUGGESTION_BATCH_SIZE } from "../helpers/constants";
+import { toApiCatJudgementsFormat } from "../helpers/utils";
+import { type ApiFormatCatJudgements, type CatJudgements } from "../types/catJudgement";
+
 export type FromApiOptions = {
   method?: "GET" | "POST" | "PUT" | "DELETE";
-  headers?: Headers;
+  headers?: HeadersInit;
   body?: Record<string, unknown>;
   query?: Record<string, string | number>;
 };
@@ -22,13 +26,48 @@ export function fromApi<T extends Record<string, unknown>>(
       urlWithQuery.searchParams.append(key, value.toString());
     });
   }
-
+  const totalHeaders = new Headers(options.headers);
+  if (options.body && !totalHeaders?.get("Content-Type"))
+    totalHeaders.set("Content-Type", "application/json");
   return fetch(urlWithQuery, {
     method: options.method,
-    headers: options.headers,
+    headers: totalHeaders,
     body: JSON.stringify(options.body),
   }).then((res) => {
     if (res.ok) return res.json() as unknown as T;
     throw new Error(`Request failed with HTTP status code ${res.status}.`);
   });
+}
+
+type GetCatRecommendationsBody = {
+  number_of_recommendations: number;
+  ratings: ApiFormatCatJudgements;
+};
+
+type GetCatRecommendationsResponse = {
+  recommendations: string[];
+};
+
+export async function getCatRecommendationsFromAPI(
+  catJudgements: CatJudgements,
+): Promise<string[]> {
+  const body: GetCatRecommendationsBody = {
+    number_of_recommendations: CAT_SUGGESTION_BATCH_SIZE,
+    ratings: toApiCatJudgementsFormat(catJudgements),
+  };
+  const response = await fromApi<GetCatRecommendationsResponse>(`${BASE_API_URL}/recommendations`, {
+    body,
+    method: "POST",
+  });
+  return response.recommendations;
+  // const response = await fetch(`${BASE_API_URL}/recommendations`, {
+  //   body: JSON.stringify(body),
+  //   method: "post",
+  //   headers: {
+  //     "Content-Type": "application/json",
+  //   },
+  // });
+  // if (!response.ok)
+  //   throw new Error(`Failed to fetch recommendations: ${JSON.stringify(await response.json())}`);
+  // return ((await response.json()) as { recommendations: string[] }).recommendations;
 }

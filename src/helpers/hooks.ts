@@ -1,7 +1,9 @@
+import { useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useState, type Dispatch, type SetStateAction } from "react";
+import { getCatRecommendationsFromAPI } from "../lib/fromApi";
 import { type CatJudgement, type CatJudgements } from "../types/catJudgement";
 import { CAT_SUGGESTION_BATCH_SIZE, STORAGE_KEYS } from "./constants";
-import { fetchCatIds, preloadImage } from "./utils";
+import { preloadImage } from "./utils";
 
 type StorageObject = typeof window.localStorage;
 // useStorage, useLocalStorage and useSessionStorage is taken from, but translated to typescript:
@@ -57,62 +59,51 @@ export function useSessionStorage<ValueType>(key: string, defaultValue: ValueTyp
   return useStorage(key, defaultValue, window.sessionStorage);
 }
 
-export function useLikedCat() {
-  const [likedCatNames, setLikedCat] = useLocalStorage<string[]>("likedCat", []);
-
-  const addCat = (catName: string) => {
-    if (likedCatNames.includes(catName)) {
-      return;
-    }
-    setLikedCat((prev) => [...prev, catName]);
-  };
-
-  const removeCat = (catName: string) => {
-    setLikedCat((prev) => prev.filter((name) => name !== catName));
-  };
-
-  return { likedCatNames, addCat, removeCat };
+function usePreloadImages(imageUrls: string[]) {
+  useEffect(() => {
+    imageUrls.map(preloadImage).forEach((promise) => {
+      promise.catch((e) => {
+        console.error(`Failed to preload image`, e);
+      });
+    });
+  }, [imageUrls]);
 }
 
-export function useCatIdCursor() {
-  const [catIdCursor, setCatIdCursor] = useLocalStorage<number>("catIdCursor", 1);
-
-  const incrementCatIdCursor = useCallback(() => {
-    setCatIdCursor((prev) => prev + 1);
-  }, [setCatIdCursor]);
-  return { catIdCursor, incrementCatIdCursor };
-}
-
-export function useSuggestedCatWithPreload(catJudgements: CatJudgements): {
+type SuggestedCatWithPreloadResult = {
   suggestedCatId: string | null | undefined;
   nextCat: () => void;
-} {
-  const [catIds, setCatIds] = useState<string[]>([]);
+};
+
+export function useSuggestedCatWithPreload(
+  catJudgements: CatJudgements,
+): SuggestedCatWithPreloadResult {
+  const [catUrls, setCatUrls] = useState<string[]>([]);
+  const { data: recommendedCatUrls, refetch } = useQuery(
+    ["catRecommendations", catJudgements],
+    () => getCatRecommendationsFromAPI(catJudgements),
+    {
+      enabled: false,
+    },
+  );
+  usePreloadImages(recommendedCatUrls ?? []);
 
   useEffect(() => {
-    if (catIds.length <= CAT_SUGGESTION_BATCH_SIZE) {
-      let cancel = false;
-      void fetchCatIds(catJudgements).then((catIds) => {
-        if (!cancel) {
-          setCatIds((prev) => [...prev, ...catIds.filter((id) => !prev.includes(id))]);
-          void catIds.map(preloadImage).map((promise) =>
-            promise.catch((e) => {
-              console.error(`Failed to preload image`, e);
-            }),
-          );
-        }
-      });
-      return () => {
-        cancel = true;
-      };
+    if (catUrls.length <= CAT_SUGGESTION_BATCH_SIZE) {
+      void refetch();
     }
-  }, [catIds.length, catJudgements]);
+  }, [refetch, catUrls]);
+
+  useEffect(() => {
+    if (recommendedCatUrls) {
+      setCatUrls((prev) => [...prev, ...recommendedCatUrls.filter((id) => !prev.includes(id))]);
+    }
+  }, [recommendedCatUrls]);
 
   const nextCat = useCallback(() => {
-    setCatIds((prev) => prev.slice(1));
+    setCatUrls((prev) => prev.slice(1));
   }, []);
 
-  return { suggestedCatId: catIds[0], nextCat };
+  return { suggestedCatId: catUrls[0], nextCat };
 }
 
 export function useCatJudgements(): {

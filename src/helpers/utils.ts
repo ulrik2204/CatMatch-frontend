@@ -3,9 +3,8 @@ import {
   type ApiFormatCatJudgements,
   type CatJudgements,
 } from "../types/catJudgement";
-import { BASE_API_URL, CAT_SUGGESTION_BATCH_SIZE } from "./constants";
 
-export function preloadImage(src: string) {
+export function preloadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = function () {
@@ -31,26 +30,4 @@ export function toApiCatJudgementsFormat(catJudgements: CatJudgements): ApiForma
       }
     }),
   );
-}
-
-export async function fetchCatIds(catJudgements: CatJudgements): Promise<string[]> {
-  interface CatSuggestionOptions {
-    number_of_recommendations: number;
-    ratings: ApiFormatCatJudgements;
-  }
-
-  const suggestionOptions: CatSuggestionOptions = {
-    number_of_recommendations: CAT_SUGGESTION_BATCH_SIZE,
-    ratings: toApiCatJudgementsFormat(catJudgements),
-  };
-  const response = await fetch(`${BASE_API_URL}/recommendations`, {
-    body: JSON.stringify(suggestionOptions),
-    method: "post",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-  if (!response.ok)
-    throw new Error(`Failed to fetch recommendations: ${JSON.stringify(await response.json())}`);
-  return ((await response.json()) as { recommendations: string[] }).recommendations;
 }
