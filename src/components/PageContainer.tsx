@@ -9,7 +9,7 @@ type PageContainerProps = {
 const navigation = [
   { name: "Swipe", href: "/" },
   { name: "Likes", href: "/likes" },
-  { name: "Stats", href: "/stats" },
+  { name: "Analytics", href: "/analytics" },
 ];
 
 export default function PageContainer(props: PageContainerProps): ReactElement {
@@ -56,11 +56,7 @@ export default function PageContainer(props: PageContainerProps): ReactElement {
             <div className="flex items-center justify-between">
               <a href="#" className="-m-1.5 p-1.5">
                 <span className="sr-only">Your Company</span>
-                <img
-                  className="h-8 w-auto"
-                  src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600"
-                  alt=""
-                />
+                <img className="h-8 w-auto" src="/CatMatch.png" alt="" />
               </a>
               <button
                 type="button"

@@ -60,14 +60,31 @@ export async function getCatRecommendationsFromAPI(
     method: "POST",
   });
   return response.recommendations;
-  // const response = await fetch(`${BASE_API_URL}/recommendations`, {
-  //   body: JSON.stringify(body),
-  //   method: "post",
-  //   headers: {
-  //     "Content-Type": "application/json",
-  //   },
-  // });
-  // if (!response.ok)
-  //   throw new Error(`Failed to fetch recommendations: ${JSON.stringify(await response.json())}`);
-  // return ((await response.json()) as { recommendations: string[] }).recommendations;
+}
+
+type GetMostLeastLikedCatsBody = {
+  ratings: ApiFormatCatJudgements;
+  number_of_liked_items?: number;
+  number_of_disliked_items?: number;
+};
+
+type GetMostLeastLikedCatsResponse = {
+  most_liked: string[];
+  least_liked: string[];
+};
+
+export async function getMostLeastLikedCatsFromAPI(
+  catJudgements: CatJudgements,
+  number_of_liked_items = 3,
+  number_of_disliked_items = 3,
+): Promise<GetMostLeastLikedCatsResponse> {
+  const body: GetMostLeastLikedCatsBody = {
+    ratings: toApiCatJudgementsFormat(catJudgements),
+    number_of_liked_items,
+    number_of_disliked_items,
+  };
+  return await fromApi<GetMostLeastLikedCatsResponse>(`${BASE_API_URL}/most-least-liked-cats`, {
+    body,
+    method: "POST",
+  });
 }

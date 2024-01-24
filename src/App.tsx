@@ -1,8 +1,9 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import "./app.css";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import IndexPage from "./pages";
 import PageContainer from "./components/PageContainer";
+import IndexPage from "./pages";
+import AnalyticsPage from "./pages/analytics";
 import LikesPage from "./pages/likes";
 import SingleCatCardPage from "./pages/single";
 
@@ -17,10 +18,10 @@ const router = createBrowserRouter([
     path: "/likes",
     element: <LikesPage />,
   },
-  //   {
-  //     path: "/stats",
-  //     element: <StatsPage />,
-  //   },
+  {
+    path: "/analytics",
+    element: <AnalyticsPage />,
+  },
   {
     path: "/single/:catId",
     element: <SingleCatCardPage />,
