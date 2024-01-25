@@ -31,3 +31,9 @@ export function toApiCatJudgementsFormat(catJudgements: CatJudgements): ApiForma
     }),
   );
 }
+
+export function extractCatBreedFromUrl(url: string): string {
+  const urlParts = url.split("/");
+  const breed = urlParts[urlParts.length - 2];
+  return breed;
+}

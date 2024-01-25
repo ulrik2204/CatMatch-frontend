@@ -10,7 +10,8 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { useCatJudgements } from "../helpers/hooks";
+import { useCatJudgements, useMostLeastLikedCats } from "../helpers/hooks";
+import { extractCatBreedFromUrl } from "../helpers/utils";
 import { CatJudgement, type CatJudgements } from "../types/catJudgement";
 
 type Analytics = {
@@ -26,9 +27,10 @@ type Analytics = {
 export default function AnalyticsPage() {
   const { catJudgements } = useCatJudgements();
   const analytics = useMemo(() => calculateCatAnalytics(catJudgements), [catJudgements]);
+  const mostLeastLikedCats = useMostLeastLikedCats(catJudgements);
   return (
     <div className="flex w-full flex-col items-center pt-8">
-      <h1>Cat Report</h1>
+      <h1>Analytics</h1>
       <div className="flex h-8 flex-col items-center">
         {/* {loading && <div>Updating...</div>}
         <div>{errorReasons?.map((reason) => <div>{reason}</div>)}</div> */}
@@ -50,7 +52,7 @@ export default function AnalyticsPage() {
             </div>
           </div>
           <div className="flex w-5/6 flex-col items-center pt-4 md:w-1/2">
-            <h2>Number of liked pokemon per type</h2>
+            <h2>Number of liked cats per breed</h2>
             <ResponsiveContainer width="100%" height={1000}>
               <BarChart
                 data={analytics.catBreedDistribution}
@@ -60,7 +62,8 @@ export default function AnalyticsPage() {
               >
                 <Text />
                 <XAxis dataKey="count" type="number" />
-                <YAxis dataKey="breed" fontSize={14} type="category" />
+                {/* Set the YAxis width to make the YAxis labels not cut off  */}
+                <YAxis dataKey="breed" fontSize={14} type="category" width={100} />
                 <Tooltip />
                 <Legend />
                 <Bar
@@ -71,6 +74,13 @@ export default function AnalyticsPage() {
               </BarChart>
             </ResponsiveContainer>
           </div>
+          <div className="flex w-full flex-col items-center pt-8">
+            <h2>Your cat preferences</h2>
+            <MostAndLeastLikedCatsDisplay
+              mostLikedCats={mostLeastLikedCats?.mostLikedCats}
+              leastLikedCats={mostLeastLikedCats?.leastLikedCats}
+            />
+          </div>
           <div className="h-20"></div>
         </div>
       }
@@ -78,14 +88,58 @@ export default function AnalyticsPage() {
   );
 }
 
+type MostAndLeastLikedCatsProps = {
+  mostLikedCats?: string[];
+  leastLikedCats?: string[];
+};
+
+function MostAndLeastLikedCatsDisplay(props: MostAndLeastLikedCatsProps) {
+  const likedLength = props.mostLikedCats?.length ?? 3;
+  const dislikedLength = props.leastLikedCats?.length ?? 3;
+  return (
+    <div className="flex flex-col items-center justify-center space-y-8">
+      <div>
+        <h3 className="text-center md:text-left">Top Recommended Cats</h3>
+        <div className={`grid grid-cols-1 gap-4 md:grid-cols-${likedLength}`}>
+          {props.mostLikedCats?.map((catUrl) => (
+            <div key={catUrl} className="mx-auto text-center">
+              <h4>{extractCatBreedFromUrl(catUrl)}</h4>
+              <img
+                draggable={false}
+                src={catUrl}
+                alt="Picture"
+                className="h-64 w-64 object-cover" // Constant size for images
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+      <div>
+        <h3 className="text-center md:text-left">Bottom Cat Picks</h3>
+        <div className={`grid grid-cols-1 gap-4 md:grid-cols-${dislikedLength}`}>
+          {props.leastLikedCats?.map((catUrl) => (
+            <div key={catUrl} className="mx-auto text-center">
+              <h4>{extractCatBreedFromUrl(catUrl)}</h4>
+              <img
+                draggable={false}
+                src={catUrl}
+                alt="Picture"
+                className="h-64 w-64 object-cover" // Constant size for images
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 type DistributionType = Record<string, { breed: string; count: number }>;
 
 function calculateCatAnalytics(catJudgements: CatJudgements): Analytics {
   // Cat breed distribution
   const catBreedDistributionMap: DistributionType = {};
   for (const catUrl in catJudgements) {
-    const urlParts = catUrl.split("/");
-    const breed = urlParts[urlParts.length - 2];
+    const breed = extractCatBreedFromUrl(catUrl);
     if (breed in catBreedDistributionMap) {
       catBreedDistributionMap[breed].count++;
     } else {

@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useState, type Dispatch, type SetStateAction } from "react";
-import { getCatRecommendationsFromAPI } from "../lib/fromApi";
+import { getCatRecommendationsFromAPI, getMostLeastLikedCatsFromAPI } from "../lib/fromApi";
 import { type CatJudgement, type CatJudgements } from "../types/catJudgement";
 import { CAT_SUGGESTION_BATCH_SIZE, STORAGE_KEYS } from "./constants";
 import { preloadImage } from "./utils";
@@ -122,4 +122,22 @@ export function useCatJudgements(): {
   );
 
   return { catJudgements, judgeCat };
+}
+
+export function useMostLeastLikedCats(catJudgements: CatJudgements):
+  | {
+      mostLikedCats: string[];
+      leastLikedCats: string[];
+    }
+  | undefined {
+  const { data: mostLeastLikedCats } = useQuery(["mostLeastLikedCats", catJudgements], () =>
+    getMostLeastLikedCatsFromAPI(catJudgements),
+  );
+
+  return (
+    mostLeastLikedCats && {
+      mostLikedCats: mostLeastLikedCats.most_liked,
+      leastLikedCats: mostLeastLikedCats.least_liked,
+    }
+  );
 }

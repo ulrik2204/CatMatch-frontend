@@ -83,7 +83,7 @@ export async function getMostLeastLikedCatsFromAPI(
     number_of_liked_items,
     number_of_disliked_items,
   };
-  return await fromApi<GetMostLeastLikedCatsResponse>(`${BASE_API_URL}/most-least-liked-cats`, {
+  return await fromApi<GetMostLeastLikedCatsResponse>(`${BASE_API_URL}/most-least-liked`, {
     body,
     method: "POST",
   });
