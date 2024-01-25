@@ -94,13 +94,11 @@ type MostAndLeastLikedCatsProps = {
 };
 
 function MostAndLeastLikedCatsDisplay(props: MostAndLeastLikedCatsProps) {
-  const likedLength = props.mostLikedCats?.length ?? 3;
-  const dislikedLength = props.leastLikedCats?.length ?? 3;
   return (
     <div className="flex flex-col items-center justify-center space-y-8">
       <div>
         <h3 className="text-center md:text-left">Top Recommended Cats</h3>
-        <div className={`grid grid-cols-1 gap-4 md:grid-cols-${likedLength}`}>
+        <div className={`grid grid-cols-1 gap-4 md:grid-cols-3`}>
           {props.mostLikedCats?.map((catUrl) => (
             <div key={catUrl} className="mx-auto text-center">
               <h4>{extractCatBreedFromUrl(catUrl)}</h4>
@@ -116,7 +114,7 @@ function MostAndLeastLikedCatsDisplay(props: MostAndLeastLikedCatsProps) {
       </div>
       <div>
         <h3 className="text-center md:text-left">Bottom Cat Picks</h3>
-        <div className={`grid grid-cols-1 gap-4 md:grid-cols-${dislikedLength}`}>
+        <div className={`grid grid-cols-1 gap-4 md:grid-cols-3`}>
           {props.leastLikedCats?.map((catUrl) => (
             <div key={catUrl} className="mx-auto text-center">
               <h4>{extractCatBreedFromUrl(catUrl)}</h4>
