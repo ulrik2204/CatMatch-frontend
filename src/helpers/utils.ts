@@ -37,3 +37,9 @@ export function extractCatBreedFromUrl(url: string): string {
   const breed = urlParts[urlParts.length - 2];
   return breed;
 }
+
+export function extractCatNameFromUrl(url: string): string {
+  const urlParts = url.split("/");
+  const name = urlParts[urlParts.length - 1];
+  return name;
+}
