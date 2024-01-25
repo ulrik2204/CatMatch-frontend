@@ -36,24 +36,73 @@ export default function AnalyticsPage() {
   return (
     <div className="flex w-full flex-col items-center pt-8">
       <h1>Analytics</h1>
-      <div className="flex h-8 flex-col items-center">
-        {/* {loading && <div>Updating...</div>}
-        <div>{errorReasons?.map((reason) => <div>{reason}</div>)}</div> */}
-      </div>
       {
         <div className="flex w-full flex-col items-center pt-4">
-          <div className="pt-2">
-            <div>Number of swipes: {analytics.numberOfCatJudgements}</div>
-            <div>Liked cats count: {analytics.numberOfLikedCats}</div>
-            <div>Disliked cats count: {analytics.numberOfDislikedCats}</div>
-            <div>Like-dislike ratio: {(analytics.likeDislikeRatio * 100).toFixed(2)} % </div>
-            <div>
-              Most liked cat breed: {analytics.mostLikedCatBreed.breed} (likes:{" "}
-              {analytics.mostLikedCatBreed.likes})
-            </div>
-            <div>
-              Least liked cat breed: {analytics.leastLikedCatBreed.breed} (likes:{" "}
-              {analytics.leastLikedCatBreed.likes})
+          <div className="flex w-full flex-col items-center pt-4">
+            {/*  */}
+            <div className="mb-4 rounded bg-white px-8 pb-8 pt-6 shadow-md ">
+              <h2 className="mb-4 text-xl font-semibold text-gray-800">
+                Cat Preferences Statistics
+              </h2>
+              <div className="border-t border-gray-300 pt-4">
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="text-gray-600">Number of swipes:</span>
+                  <span className="font-bold">{analytics.numberOfCatJudgements}</span>
+                </div>
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="text-gray-600">Liked cats count:</span>
+                  <span className="font-bold">{analytics.numberOfLikedCats}</span>
+                </div>
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="text-gray-600">Disliked cats count:</span>
+                  <span className="font-bold">{analytics.numberOfDislikedCats}</span>
+                </div>
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="text-gray-600">Like-dislike ratio:</span>
+                  <span className="font-bold">
+                    {(analytics.likeDislikeRatio * 100).toFixed(2)} %
+                  </span>
+                </div>
+                <div className="border-t border-gray-300 pt-4">
+                  {/* ... other statistics ... */}
+                  <div className="mb-4">
+                    <div className="mb-1 flex items-center justify-between">
+                      <span className="text-gray-600">Most liked cat breed:</span>
+                      <span className="font-bold">{analytics.mostLikedCatBreed.breed}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="pl-6 text-sm text-gray-500">Likes:</span>
+                      <span className="text-sm font-semibold">
+                        {analytics.mostLikedCatBreed.likes}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="pl-6 text-sm text-gray-500">Dislikes:</span>
+                      <span className="text-sm font-semibold">
+                        {analytics.mostLikedCatBreed.dislikes}
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="mb-1 flex items-center justify-between">
+                      <span className="text-gray-600">Least liked cat breed:</span>
+                      <span className="font-bold">{analytics.leastLikedCatBreed.breed}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="pl-6 text-sm text-gray-500">Likes:</span>
+                      <span className="text-sm font-semibold">
+                        {analytics.leastLikedCatBreed.likes}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="pl-6 text-sm text-gray-500">Dislikes:</span>
+                      <span className="text-sm font-semibold">
+                        {analytics.leastLikedCatBreed.dislikes}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
           <div className="flex w-5/6 flex-col items-center pt-4 md:w-1/2">
