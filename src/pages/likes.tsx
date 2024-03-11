@@ -11,14 +11,12 @@ export default function LikesPage() {
 
   return (
     <div className="flex w-full flex-col items-center pt-8">
-      <h1>Liked Cats</h1>
-      <div>
-        <Button color="secondary" onClick={clearCatJudgements}>
-          Clear Swipes
-        </Button>
-      </div>
+      <h1 className="pb-8">Liked Cats</h1>
+      <Button color="secondary" onClick={clearCatJudgements}>
+        Clear Swipes
+      </Button>
 
-      <div className="grid w-11/12 grid-cols-2 items-center gap-4 pt-6 md:w-1/2">
+      <div className="grid w-11/12 grid-cols-2 items-center gap-4 pt-12 md:w-1/2">
         {likedCatIds.map((catUrl) => (
           <>
             <div>{extractCatNameFromUrl(catUrl)}</div>
