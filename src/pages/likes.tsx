@@ -4,7 +4,7 @@ import { extractCatNameFromUrl } from "../helpers/utils";
 import { CatJudgement } from "../types/catJudgement";
 
 export default function LikesPage() {
-  const { catJudgements, judgeCat } = useCatJudgements();
+  const { catJudgements, judgeCat, clearCatJudgements } = useCatJudgements();
   const likedCatIds = Object.entries(catJudgements)
     .filter(([_id, judgement]) => judgement === CatJudgement.LIKE)
     .map(([id]) => id);
@@ -13,8 +13,8 @@ export default function LikesPage() {
     <div className="flex w-full flex-col items-center pt-8">
       <h1>Liked Cats</h1>
       <div>
-        <Button color="secondary" onClick={() => localStorage.clear()}>
-          Clear Liked cats
+        <Button color="secondary" onClick={clearCatJudgements}>
+          Clear Swipes
         </Button>
       </div>
 

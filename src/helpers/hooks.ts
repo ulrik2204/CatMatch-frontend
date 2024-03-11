@@ -109,6 +109,7 @@ export function useSuggestedCatWithPreload(
 export function useCatJudgements(): {
   catJudgements: CatJudgements;
   judgeCat: (catId: string, judgement: CatJudgement) => void;
+  clearCatJudgements: () => void;
 } {
   const [catJudgements, setCatJudgements] = useLocalStorage(STORAGE_KEYS.CAT_JUDGEMENTS, {});
 
@@ -121,7 +122,11 @@ export function useCatJudgements(): {
     [setCatJudgements],
   );
 
-  return { catJudgements, judgeCat };
+  const clearCatJudgements = useCallback(() => {
+    setCatJudgements({});
+  }, [setCatJudgements]);
+
+  return { catJudgements, judgeCat, clearCatJudgements };
 }
 
 export function useMostLeastLikedCats(catJudgements: CatJudgements):
