@@ -183,7 +183,7 @@ function MostAndLeastLikedCatsDisplay(props: MostAndLeastLikedCatsProps) {
       <div>
         <h3 className="pt-4 text-center md:text-left">Top Recommended Cats</h3>
         <p>The cats the system predicts you will like the most.</p>
-        <div className={`grid grid-cols-1 gap-4 pt-2 md:grid-cols-3`}>
+        <div className={`grid grid-cols-1 gap-4 pt-2 lg:grid-cols-3`}>
           {props.mostLikedCats?.map((catUrl) => (
             <div key={catUrl} className="mx-auto text-center">
               <h4>{extractCatBreedFromUrl(catUrl)}</h4>
@@ -200,7 +200,7 @@ function MostAndLeastLikedCatsDisplay(props: MostAndLeastLikedCatsProps) {
       <div>
         <h3 className="pt-4 text-center md:text-left">Bottom Cat Picks</h3>
         <p>The cats the system predicts you will dislike the most.</p>
-        <div className={`grid grid-cols-1 gap-4 pt-2 md:grid-cols-3`}>
+        <div className={`grid grid-cols-1 gap-4 pt-2 lg:grid-cols-3`}>
           {props.leastLikedCats?.map((catUrl) => (
             <div key={catUrl} className="mx-auto text-center">
               <h4>{extractCatBreedFromUrl(catUrl)}</h4>
@@ -255,7 +255,9 @@ function calculateCatAnalytics(catJudgements: CatJudgements): Analytics {
   const numberOfDislikedCats = catJudgeValues.filter(
     (judgement) => judgement === CatJudgement.DISLIKE,
   ).length;
-  const likeDislikeRatio = numberOfLikedCats / numberOfCatJudgements;
+  console.log("numberOfDislikedCats", numberOfDislikedCats);
+  const likeDislikeRatio =
+    numberOfCatJudgements > 0 ? numberOfLikedCats / numberOfCatJudgements : 0;
 
   // Most and least liked cat breed
   type MostLeastPair = {
@@ -264,7 +266,7 @@ function calculateCatAnalytics(catJudgements: CatJudgements): Analytics {
   };
   const initialMostLeastPair: MostLeastPair = {
     most: { breed: "", likes: 0, dislikes: 0 },
-    least: { breed: "", likes: 0, dislikes: Number.MAX_SAFE_INTEGER },
+    least: { breed: "", likes: 0, dislikes: 0 },
   };
   const { most: mostLikedCatBreed, least: leastLikedCatBreed } = Object.entries(
     catBreedDistributionMap,
@@ -274,10 +276,12 @@ function calculateCatAnalytics(catJudgements: CatJudgements): Analytics {
     if (obj.likes > most.likes) {
       most.breed = breed;
       most.likes = obj.likes;
+      most.dislikes = obj.dislikes;
     }
-    if (obj.likes < least.dislikes) {
+    if (obj.dislikes > least.dislikes) {
       least.breed = breed;
-      least.dislikes = obj.likes;
+      least.likes = obj.likes;
+      least.dislikes = obj.dislikes;
     }
     return { most, least };
   }, initialMostLeastPair);
