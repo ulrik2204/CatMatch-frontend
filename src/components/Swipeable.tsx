@@ -1,14 +1,14 @@
 import {
+  useCallback,
+  useEffect,
+  useRef,
   type MouseEventHandler,
   type ReactElement,
   type ReactNode,
   type TouchEventHandler,
-  useCallback,
-  useEffect,
-  useRef,
 } from "react";
 
-const swipeRotationThresholdRadians = Math.PI / 25;
+const swipeRotationThresholdRadians = Math.PI / 80;
 const radiansRotationPerPixelMovement = Math.PI / 4600;
 const xTranslationScalingFactor = 1 / 3;
 const yTranslationScalingFactor = 1 / 4;
