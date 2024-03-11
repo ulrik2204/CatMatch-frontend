@@ -12,15 +12,17 @@ export default function LikesPage() {
   return (
     <div className="flex w-full flex-col items-center pt-8">
       <h1>Liked Cats</h1>
-      <div className="flex w-full flex-col items-center pt-6">
+      <div>
+        <Button color="secondary" onClick={() => localStorage.clear()}>
+          Clear Liked cats
+        </Button>
+      </div>
+
+      <div className="grid w-11/12 grid-cols-2 items-center gap-4 pt-6 md:w-1/2">
         {likedCatIds.map((catUrl) => (
-          <div
-            key={catUrl}
-            className="flex w-5/6 items-center justify-between pt-4 md:w-3/5 lg:w-2/5
-          "
-          >
+          <>
             <div>{extractCatNameFromUrl(catUrl)}</div>
-            <div className="flex w-40 justify-between md:w-48">
+            <div className="flex w-40 justify-between justify-self-end">
               <a href={`/single/${btoa(catUrl)}`}>
                 <Button>See cat</Button>
               </a>
@@ -28,7 +30,7 @@ export default function LikesPage() {
                 Dislike
               </Button>
             </div>
-          </div>
+          </>
         ))}
       </div>
     </div>
