@@ -73,13 +73,14 @@ type SuggestedCatWithPreloadResult = {
   suggestedCatId: string | null | undefined;
   nextCat: () => void;
 };
-
 export function useSuggestedCatWithPreload(
   catJudgements: CatJudgements,
 ): SuggestedCatWithPreloadResult {
   const [catUrls, setCatUrls] = useState<string[]>([]);
+  // Not using isFetching or isLoading as they are unpredictable when enabled: false
+  const [isCurrentlyFetching, setIsCurrentlyFetching] = useState<boolean>(false);
   const { data: recommendedCatUrls, refetch } = useQuery(
-    ["catRecommendations", catJudgements],
+    ["catRecommendations"],
     () => getCatRecommendationsFromAPI(catJudgements),
     {
       enabled: false,
@@ -88,10 +89,14 @@ export function useSuggestedCatWithPreload(
   usePreloadImages(recommendedCatUrls ?? []);
 
   useEffect(() => {
-    if (catUrls.length <= CAT_SUGGESTION_BATCH_SIZE) {
-      void refetch();
+    if (catUrls.length < CAT_SUGGESTION_BATCH_SIZE && !isCurrentlyFetching) {
+      // console.log("inside if: fetching", isCurrentlyFetching, "catUrls", catUrls.length);
+      setIsCurrentlyFetching(true);
+      void refetch().then(() => {
+        setIsCurrentlyFetching(false);
+      });
     }
-  }, [refetch, catUrls]);
+  }, [refetch, catUrls, isCurrentlyFetching]);
 
   useEffect(() => {
     if (recommendedCatUrls) {
